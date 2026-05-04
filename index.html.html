@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TEKSI">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="description" content="TEKSI — Telecom Expert Knowledge Support Intelligence MTN Congo">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Télécom SimCenter v4.3 — Component Analyzer</title>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1e2530;
+  --b:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);
+  --t:#e2e8f0;--t2:#94a3b8;--t3:#64748b;
+  --green:#22c55e;--amber:#f59e0b;--red:#ef4444;
+  --blue:#3b82f6;--purple:#8b5cf6;--teal:#14b8a6;
+  font-family:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--t);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+.top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--b2);flex-shrink:0;}
+.logo{font-size:12px;font-weight:bold;display:flex;align-items:center;gap:7px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.badge{font-size:9px;padding:2px 8px;border-radius:10px;border:0.5px solid;}
+.b-blue{background:rgba(59,130,246,.1);color:var(--blue);border-color:rgba(59,130,246,.3);}
+.b-green{background:rgba(34,197,94,.1);color:var(--green);border-color:rgba(34,197,94,.3);}
+.b-amber{background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.3);}
+.b-red{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3);}
+.btn-api{padding:4px 12px;font-size:10px;font-family:inherit;border-radius:5px;cursor:pointer;border:0.5px solid;background:rgba(139,92,246,.1);color:var(--purple);border-color:rgba(139,92,246,.3);margin-left:auto;}
+.main{display:flex;flex:1;overflow:hidden;}
+/* TREE */
+.tree{width:175px;background:var(--bg2);border-right:1px solid var(--b2);overflow-y:auto;flex-shrink:0;}
+.ts{padding:5px 10px 2px;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b);background:var(--bg2);}
+.ti{display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--b);transition:background .1s;}
+.ti:hover{background:var(--bg3);}
+.ti.on{background:rgba(59,130,246,.1);}
+.ti.on .tn{color:var(--blue);}
+.tic{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:0.5px solid;}
+.tn{font-size:11px;color:var(--t);font-weight:500;}
+.ts2{font-size:9px;color:var(--t3);}
+.tc{margin-left:auto;font-size:9px;color:var(--t3);}
+/* CENTER */
+.center{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+.ch{padding:11px 15px;background:var(--bg2);border-bottom:1px solid var(--b2);flex-shrink:0;display:none;}
+.ch-title{font-size:14px;font-weight:bold;color:var(--t);margin-bottom:3px;}
+.ch-desc{font-size:10px;color:var(--t2);line-height:1.5;margin-bottom:5px;}
+.ch-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.fbar{display:flex;gap:4px;padding:7px 13px;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0;display:none;flex-wrap:wrap;}
+.fb{font-size:9px;padding:3px 9px;border-radius:10px;border:0.5px solid var(--b2);cursor:pointer;background:transparent;color:var(--t3);font-family:inherit;}
+.fb.on{background:rgba(59,130,246,.1);color:var(--blue);border-color:rgba(59,130,246,.3);}
+.fs{flex:1;min-width:100px;font-size:10px;font-family:inherit;padding:3px 8px;background:var(--bg3);color:var(--t);border:0.5px solid var(--b2);border-radius:5px;outline:none;}
+.fs:focus{border-color:rgba(59,130,246,.5);}
+.fl{flex:1;overflow-y:auto;padding:6px;}
+.fc{border:0.5px solid var(--b);border-radius:7px;margin-bottom:5px;overflow:hidden;cursor:pointer;}
+.fc:hover{border-color:var(--b2);}
+.fc.on{border-color:var(--blue);}
+.fc.sc{border-left:3px solid var(--red);}
+.fc.sm{border-left:3px solid var(--amber);}
+.fc.sn{border-left:3px solid var(--blue);}
+.fch{display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--bg2);}
+.fsev{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:500;flex-shrink:0;}
+.rc{background:rgba(239,68,68,.15);color:var(--red);}
+.rm{background:rgba(245,158,11,.15);color:var(--amber);}
+.rn{background:rgba(59,130,246,.15);color:var(--blue);}
+.fn{font-size:11px;font-weight:500;color:var(--t);flex:1;}
+.fcode{font-size:8px;color:var(--t3);font-family:monospace;}
+.fcb{padding:8px 10px 10px;background:var(--bg);}
+.fps{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.fp{font-size:9px;padding:2px 7px;background:var(--bg2);border:0.5px solid var(--b2);border-radius:4px;color:var(--t2);}
+.fp.ef{color:var(--red);border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06);}
+.fp.ew{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06);}
+.fca{font-size:10px;color:var(--t2);margin-bottom:5px;line-height:1.5;}
+.fcs{display:flex;align-items:center;gap:4px;margin-bottom:5px;flex-wrap:wrap;padding:4px 6px;background:var(--bg3);border-radius:4px;}
+.cs0{font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(239,68,68,.12);color:var(--red);}
+.csa{color:var(--t3);font-size:10px;}
+.cs1{font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(245,158,11,.1);color:var(--amber);}
+.fbtns{display:flex;gap:5px;}
+.fbtn{padding:5px 10px;font-size:9px;font-family:inherit;cursor:pointer;border-radius:5px;border:0.5px solid;}
+.fbs{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3);}
+.fba{background:rgba(59,130,246,.1);color:var(--blue);border-color:rgba(59,130,246,.3);}
+.fba:disabled{opacity:.4;cursor:not-allowed;}
+.empty{display:flex;align-items:center;justify-content:center;flex:1;color:var(--t3);font-size:12px;text-align:center;line-height:2.5;}
+/* RIGHT */
+.right{width:310px;background:var(--bg2);border-left:1px solid var(--b2);display:flex;flex-direction:column;flex-shrink:0;}
+.rh{padding:9px 11px;border-bottom:1px solid var(--b);flex-shrink:0;}
+.rh-t{font-size:11px;font-weight:500;color:var(--t);display:flex;align-items:center;gap:7px;margin-bottom:2px;}
+.rh-s{font-size:9px;color:var(--t3);}
+.ra{flex:1;overflow-y:auto;padding:9px;}
+.ab{margin-bottom:8px;padding:9px 10px;background:var(--bg3);border:0.5px solid var(--b2);border-radius:7px;}
+.at{font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:4px;}
+.ac{font-size:10px;color:var(--t2);line-height:1.6;}
+.ac strong{color:var(--t);}
+.ac br{display:block;margin-bottom:2px;}
+.typing{font-size:10px;color:var(--t3);display:flex;align-items:center;gap:6px;padding:12px;}
+.td span{animation:tdot 1.4s infinite;opacity:.2;font-size:14px;}
+.td span:nth-child(2){animation-delay:.2s;}
+.td span:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.rf{border-top:1px solid var(--b);padding:7px;flex-shrink:0;}
+.rir{display:flex;gap:4px;}
+.rin{flex:1;font-size:10px;font-family:inherit;padding:4px 8px;background:var(--bg3);color:var(--t);border:0.5px solid var(--b2);border-radius:5px;outline:none;}
+.rin:focus{border-color:rgba(59,130,246,.5);}
+.rsend{padding:4px 9px;font-size:10px;font-family:inherit;cursor:pointer;background:rgba(59,130,246,.1);color:var(--blue);border:0.5px solid rgba(59,130,246,.3);border-radius:5px;}
+.rsend:disabled{opacity:.4;cursor:not-allowed;}
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:500;}
+.modal{background:var(--bg2);border:1px solid var(--b2);border-radius:12px;padding:22px;width:400px;max-width:90vw;}
+.modal h3{font-size:14px;color:var(--t);margin-bottom:8px;}
+.modal p{font-size:10px;color:var(--t2);margin-bottom:10px;line-height:1.5;}
+.modal input{width:100%;font-family:inherit;font-size:11px;padding:6px 9px;background:var(--bg3);color:var(--t);border:1px solid var(--b2);border-radius:5px;margin-bottom:6px;outline:none;}
+.mnote{font-size:9px;color:var(--t3);margin-bottom:12px;line-height:1.5;}
+.mbtns{display:flex;gap:6px;}
+.mp{flex:1;padding:7px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:5px;background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+.ms{padding:7px 13px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:5px;background:transparent;color:var(--t2);border:1px solid var(--b2);}
+/* SIM */
+.smbg{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;z-index:400;}
+.smbox{background:var(--bg2);border:1px solid var(--b2);border-radius:12px;padding:18px;width:510px;max-width:90vw;}
+.smbox h3{font-size:13px;color:var(--t);margin-bottom:3px;}
+.smbox p{font-size:10px;color:var(--t2);margin-bottom:12px;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+.sg{background:var(--bg3);border:0.5px solid var(--b);border-radius:6px;padding:7px 9px;}
+.sgl{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:3px;display:flex;justify-content:space-between;}
+.sgv{font-size:16px;font-weight:bold;margin-bottom:3px;}
+.sgc{height:52px;}
+.stl{background:var(--bg3);border:0.5px solid var(--b);border-radius:6px;padding:7px 9px;margin-bottom:10px;}
+.stlt{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:5px;}
+.ste{max-height:80px;overflow-y:auto;}
+.stev{display:flex;gap:7px;font-size:9px;padding:2px 0;border-bottom:0.5px solid var(--b);}
+.stt{color:var(--t3);min-width:38px;}
+.stf{color:var(--red);min-width:26px;}
+.stw{color:var(--amber);min-width:26px;}
+.sto{color:var(--green);min-width:26px;}
+.smclose{width:100%;padding:6px;font-size:11px;font-family:inherit;cursor:pointer;background:transparent;color:var(--t2);border:1px solid var(--b2);border-radius:5px;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- API MODAL -->
+<div class="mbg" id="api-modal">
+  <div class="modal">
+    <h3>🔑 TEKSI Engine — Anthropic API Key</h3>
+    <p>TEKSI performs deep AI analysis of each component fault: physical root cause, network impact simulation, step-by-step corrective procedure, and prevention recommendations.</p>
+    <input type="password" id="api-input" placeholder="sk-ant-api03-...">
+    <div class="mnote">Get key at <strong>console.anthropic.com</strong> → API Keys.<br>~$0.005 per deep analysis. Stored locally in your browser only.<br>Without key: all fault data and simulations work — only AI analysis is disabled.</div>
+    <div class="mbtns">
+      <button class="mp" onclick="saveKey()">Save & Activate TEKSI</button>
+      <button class="ms" onclick="skipKey()">Continue without AI</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIMULATION OVERLAY -->
+<div class="smbg" id="smbg">
+  <div class="smbox">
+    <h3 id="sm-title">Fault Simulation</h3>
+    <p id="sm-desc">—</p>
+    <div class="sgrid">
+      <div class="sg"><div class="sgl"><span>DC Voltage</span><span id="sv0">🟢</span></div><div class="sgv" id="sdv0">—</div><div class="sgc"><canvas id="sc0" width="200" height="52"></canvas></div></div>
+      <div class="sg"><div class="sgl"><span>Battery SOC</span><span id="sv1">🟢</span></div><div class="sgv" id="sdv1">—</div><div class="sgc"><canvas id="sc1" width="200" height="52"></canvas></div></div>
+      <div class="sg"><div class="sgl"><span>Temperature</span><span id="sv2">🟢</span></div><div class="sgv" id="sdv2">—</div><div class="sgc"><canvas id="sc2" width="200" height="52"></canvas></div></div>
+      <div class="sg"><div class="sgl"><span>Signal / RSRP</span><span id="sv3">🟢</span></div><div class="sgv" id="sdv3">—</div><div class="sgc"><canvas id="sc3" width="200" height="52"></canvas></div></div>
+    </div>
+    <div class="stl"><div class="stlt">Event Timeline</div><div class="ste" id="ste"></div></div>
+    <button class="smclose" onclick="closeSim()">✕ Close Simulation</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="top">
+  <div class="logo"><span class="dot"></span>SIMCENTER v4.3 — Component Fault Analyzer</div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;">
+    <span class="badge b-blue" id="fault-count">Loading...</span>
+    <span class="badge b-blue">SimPy Logic</span>
+    <span class="badge b-blue">SciPy RF</span>
+    <span class="badge" id="ai-stat">TEKSI: OFFLINE</span>
+  </div>
+  <button class="btn-api" onclick="document.getElementById('api-modal').style.display='flex'">🔑 API Key</button>
+</div>
+
+<div class="main">
+<!-- LEFT TREE -->
+<div class="tree">
+  <div class="ts">⚡ Power System</div>
+  <div class="ti" onclick="loadComp('genset',this)"><div class="tic" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)">🔋</div><div><div class="tn">Generator</div><div class="ts2">Deep Sea 4520</div></div><span class="tc">18</span></div>
+  <div class="ti" onclick="loadComp('rect_zte',this)"><div class="tic" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)">⚡</div><div><div class="tn">Rectifier ZTE</div><div class="ts2">ZXDU68 ZXD3000</div></div><span class="tc">9</span></div>
+  <div class="ti" onclick="loadComp('rect_hw',this)"><div class="tic" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)">⚡</div><div><div class="tn">Rectifier Huawei</div><div class="ts2">ETP48200 R4850G</div></div><span class="tc">8</span></div>
+  <div class="ti" onclick="loadComp('battery',this)"><div class="tic" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3)">🔌</div><div><div class="tn">VRLA Battery</div><div class="ts2">200Ah -48V Bank</div></div><span class="tc">8</span></div>
+  <div class="ts">📡 Transmission</div>
+  <div class="ti" onclick="loadComp('idu',this)"><div class="tic" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3)">📡</div><div><div class="tn">IDU ZTE NR8250</div><div class="ts2">Boards + Cards</div></div><span class="tc">15</span></div>
+  <div class="ti" onclick="loadComp('odu',this)"><div class="tic" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3)">📻</div><div><div class="tn">ODU Unit</div><div class="ts2">MW Radio Head</div></div><span class="tc">6</span></div>
+  <div class="ti" onclick="loadComp('sfp',this)"><div class="tic" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3)">〰</div><div><div class="tn">SFP / Fiber</div><div class="ts2">Optical Interfaces</div></div><span class="tc">7</span></div>
+  <div class="ts">💻 Baseband</div>
+  <div class="ti" onclick="loadComp('bbu',this)"><div class="tic" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3)">💻</div><div><div class="tn">BBU ZTE B8200</div><div class="ts2">Boards + Restart</div></div><span class="tc">15</span></div>
+  <div class="ti" onclick="loadComp('rru',this)"><div class="tic" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3)">📶</div><div><div class="tn">RRU ZTE R8882</div><div class="ts2">RF + CPRI + PA</div></div><span class="tc">15</span></div>
+  <div class="ts">📶 Radio / Sync</div>
+  <div class="ti" onclick="loadComp('antenna',this)"><div class="tic" style="background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3)">📡</div><div><div class="tn">Antennas</div><div class="ts2">GSM/LTE/5G/MW</div></div><span class="tc">7</span></div>
+  <div class="ti" onclick="loadComp('clock',this)"><div class="tic" style="background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3)">🕐</div><div><div class="tn">Clock / Sync</div><div class="ts2">GPS + PTP 1588</div></div><span class="tc">6</span></div>
+  <div class="ts">Risques Environnementaux</div>
+  <div class="ti" onclick="loadComp('lightning',this)"><div class="tic" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3)">⛈</div><div><div class="tn">Foudre Site</div><div class="ts2">Protection & Dommages</div></div><span class="tc">12</span></div>
+  <div class="ti" onclick="loadComp('attenuation',this)"><div class="tic" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3)">📉</div><div><div class="tn">Attenuation Signal</div><div class="ts2">RF MW Optique CPRI</div></div><span class="tc">10</span></div>
+</div>
+
+<!-- CENTER -->
+<div class="center">
+  <div class="ch" id="ch">
+    <div class="ch-title" id="ch-t">—</div>
+    <div class="ch-desc" id="ch-d">—</div>
+    <div class="ch-tags" id="ch-tg"></div>
+  </div>
+  <div class="fbar" id="fbar">
+    <button class="fb on" id="fb-all" onclick="setF('all',this)">All</button>
+    <button class="fb" onclick="setF('c',this)">🔴 Critical</button>
+    <button class="fb" onclick="setF('m',this)">🟡 Major</button>
+    <button class="fb" onclick="setF('casc',this)">⚡ Cascade</button>
+    <input class="fs" id="fsearch" placeholder="Search fault, cause, code..." oninput="renderFaults()">
+  </div>
+  <div id="empty" class="empty">← Select a component<br>to explore all its faults<br><span style="font-size:10px;color:var(--t3)">11 equipment types · 114 fault scenarios</span></div>
+  <div class="fl" id="fl" style="display:none"></div>
+</div>
+
+<!-- RIGHT: AI -->
+<div class="right">
+  <div class="rh">
+    <div class="rh-t">🤖 TEKSI Deep Analysis <span class="badge b-blue" id="tb">Ready</span></div>
+    <div class="rh-s">Select fault → 🤖 AI Analyze → deep diagnosis + procedure + prevention</div>
+  </div>
+  <div class="ra" id="ra">
+    <div style="padding:18px 10px;color:var(--t3);font-size:10px;text-align:center;line-height:2.2">
+      Select a component →<br>choose a fault →<br>click <span style="color:var(--blue)">🤖 AI Analyze</span><br><br>
+      <span style="font-size:9px">TEKSI provides:<br>• Physical root cause (component level)<br>• Network KPI impact simulation<br>• Step-by-step LMT procedure<br>• Prevention & maintenance plan<br>• Related faults to watch</span>
+    </div>
+  </div>
+  <div class="rf">
+    <div class="rir">
+      <input class="rin" id="rin" placeholder="Ask TEKSI about this component..." onkeydown="if(event.key==='Enter')ask()">
+      <button class="rsend" id="rsend" onclick="ask()">→</button>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+// ═══════════════════════ COMPONENT DATABASE ═══════════════════════════════
+const DB = {
+genset:{
+  title:'Generator Set — Deep Sea 4520',
+  desc:'Provides AC power (230V/50Hz) during grid outages. Deep Sea 4520 controller. Fuel, oil, coolant, and alternator systems can all fail independently.',
+  tags:['Deep Sea 4520','AC 230V/50Hz','Diesel Engine','CAN Bus','IP23','Auto-Start'],
+  faults:[
+    {id:'g01',sev:'m',name:'Lack of Fuel',code:'DS-001',
+     params:[['Fuel Level','8% ⚠','ew'],['Autonomy','<2h ⚠','ew']],
+     cause:'Fuel consumption exceeded supply. Supplier delay. Theft or leak in tank.',
+     casc:['Battery SOC begins falling when genset stops'],
+     action:'Restore fuel immediately. Site on battery backup. Monitor SOC.',
+     sim:[-48.2,-48.0,-47.5,-46.8,-45.5,-44,-42,0]},
+    {id:'g02',sev:'c',name:'Low Oil Pressure — Immediate Shutdown',code:'DS-002',
+     params:[['Oil Pressure','0.8 bar ✗','ef'],['AC Voltage','0V ✗','ef']],
+     cause:'Oil leak. Oil pump failure. Oil level critically low. Diluted oil.',
+     casc:['Rectifier','IDU','BBU','All Antennas'],
+     action:'Do NOT restart. Check oil level. Inspect pump/sensor. Site on battery.',
+     sim:[-48.2,0,0,0,0,-46,-44,-42]},
+    {id:'g03',sev:'c',name:'High Engine Temperature — Auto-Shutdown',code:'DS-003',
+     params:[['Engine Temp','102°C ✗','ef'],['Coolant Level','LOW ✗','ef']],
+     cause:'Coolant leak. Radiator blockage. Fan belt broken. Water pump failure.',
+     casc:['Rectifier','IDU','BBU','All Antennas'],
+     action:'Check coolant and fan. Auto-shutdown triggered. Allow cooling before restart.',
+     sim:[-48.2,0,0,0,0,0,0,0]},
+    {id:'g04',sev:'c',name:'Low Radiator Water Level',code:'DS-004',
+     params:[['Coolant Level','EMPTY ✗','ef'],['Engine Temp','89°C ⚠','ew']],
+     cause:'Radiator hose leak. Radiator crack. Faulty pressure cap.',
+     casc:['Engine seizure risk if not stopped immediately'],
+     action:'STOP ENGINE. Let cool completely. Never open radiator cap when hot.',
+     sim:[-48.2,-48.2,-48.1,-48.0,-47.5,-46.5,0,0]},
+    {id:'g05',sev:'c',name:'Water in Fuel — Injection Damage Risk',code:'DS-005',
+     params:[['Fuel Quality','CONTAMINATED ✗','ef'],['Engine Status','ROUGH ✗','ef']],
+     cause:'Rain infiltration in fuel tank. Condensation. Faulty fuel delivery.',
+     casc:['Rectifier','IDU','BBU','All Antennas'],
+     action:'Stop. Drain tank. Replace filters. Bleed fuel system. Risk of injector damage.',
+     sim:[-48.2,-48,0,0,0,-46,-43,-40]},
+    {id:'g06',sev:'m',name:'Minimum Starter Battery Voltage',code:'DS-006',
+     params:[['Bat Voltage','10.8V ⚠','ew'],['Charge Status','FLAT ⚠','ew']],
+     cause:'Starter battery discharged. Failed alternator. Parasitic drain.',
+     casc:['Cannot start genset at next power cut — CRITICAL RISK'],
+     action:'Charge or replace starter battery. Check charging alternator output (13.8-14.5V).',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'g07',sev:'m',name:'Maximum Battery Voltage — Alternator Overcharge',code:'DS-007',
+     params:[['Bat Voltage','15.2V ⚠','ew'],['Risk','Battery Damage ⚠','ew']],
+     cause:'Faulty voltage regulator on alternator causing uncontrolled overcharge.',
+     casc:['Accelerated battery aging — reduces starter battery service life'],
+     action:'Check alternator voltage regulator. Replace if output exceeds 14.8V.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'g08',sev:'m',name:'High Coolant Temperature Pre-alarm',code:'DS-008',
+     params:[['Engine Temp','78°C ⚠','ew'],['Coolant Flow','REDUCED ⚠','ew']],
+     cause:'Partial coolant loss. Radiator fouling. Thermostat sluggish.',
+     casc:['Will escalate to g03 critical shutdown if not addressed now'],
+     action:'Check coolant level and fan now. Clean radiator. Act before auto-shutdown.',
+     sim:[-48.2,-48.2,-48.1,-48.0,-47.9,-47.8,-47.6,-47.3]},
+    {id:'g09',sev:'c',name:'Start-up Failure — All Attempts Exhausted',code:'DS-009',
+     params:[['Start Status','FAILED ✗','ef'],['Battery V','12.4V','']],
+     cause:'Fuel air-lock. Weak battery. Fuel solenoid fault. Starter motor failure.',
+     casc:['Rectifier','IDU','BBU','All Antennas — site on battery backup'],
+     action:'Manually purge fuel circuit. Check battery voltage >12V. Check fuel solenoid click.',
+     sim:[-48.2,-48.0,-47.5,-46.8,-45.5,-44,0,0]},
+    {id:'g10',sev:'c',name:'CAN Bus Damaged — ECU Communication Lost',code:'DS-010',
+     params:[['CAN Bus','FAULT ✗','ef'],['ECU Comms','NO COMMS ✗','ef']],
+     cause:'CAN bus cable shorted or open circuit. ECU hardware failure. Connector corrosion.',
+     casc:['Rectifier','IDU','BBU','All Antennas — risk of immediate shutdown'],
+     action:'Check CAN bus wiring harness. Use physical STOP button on engine panel.',
+     sim:[-48.2,0,0,0,0,-45,-42,0]},
+    {id:'g11',sev:'c',name:'Phase Overload — Load Exceeds Rating',code:'DS-011',
+     params:[['Phase Load','OVERLOAD ✗','ef'],['AC Current','125A ✗','ef']],
+     cause:'Connected load exceeds generator capacity. Load imbalance between L1/L2/L3.',
+     casc:['Rectifier','IDU','BBU','All Antennas — machine arrest triggered'],
+     action:'Reduce load immediately. Balance phases L1/L2/L3. Check for short circuits.',
+     sim:[-48.2,-48.0,-47.5,-46.8,-45.5,0,0,0]},
+    {id:'g12',sev:'c',name:'Output Short Circuit',code:'DS-012',
+     params:[['Output Line','SHORT ✗','ef'],['Circuit Breaker','OPEN ✗','ef']],
+     cause:'Cable insulation failure between genset and plant. Equipment short circuit.',
+     casc:['Rectifier','IDU','BBU','All Antennas — immediate arrest'],
+     action:'Locate and fix short circuit. Check all cables genset→DCDU before restart.',
+     sim:[0,0,0,0,0,0,0,0]},
+    {id:'g13',sev:'m',name:'Generator Voltage Too Low',code:'DS-013',
+     params:[['AC Voltage','188V ⚠','ew'],['Frequency','49.2Hz ⚠','ew']],
+     cause:'Engine overloaded — not maintaining 50Hz. AVR fault. Worn brushes.',
+     casc:['Rectifier output reduced — DC voltage may drop below minimum'],
+     action:'Reduce load. Check AVR. Verify engine RPM corresponds to 50Hz.',
+     sim:[-48.2,-47.8,-47.2,-46.5,-45.8,-45.2,-44.5,-44.0]},
+    {id:'g14',sev:'c',name:'Stop Failure — Engine Does Not Stop',code:'DS-014',
+     params:[['Stop Status','FAILED ✗','ef'],['Fuel Solenoid','CHECK ✗','ef']],
+     cause:'Fuel solenoid stuck open. Arrest electromagnet failed. CAN bus loss.',
+     casc:['Engine running uncontrolled — fuel waste and overrun risk'],
+     action:'Use physical STOP button on engine. Check fuel solenoid and electromagnet.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'g15',sev:'m',name:'Oil Pressure Pre-alarm',code:'DS-015',
+     params:[['Oil Pressure','1.2 bar ⚠','ew'],['Oil Level','LOW ⚠','ew']],
+     cause:'Oil level declining. Oil pump issue beginning. Sensor drift.',
+     casc:['Will escalate to g02 critical if oil level continues to drop'],
+     action:'Top up oil immediately. Inspect pump. Check for leaks. Monitor pressure.',
+     sim:[-48.2,-48.2,-48.1,-48.0,-47.9,-47.8,-47.7,-47.6]},
+    {id:'g16',sev:'m',name:'Minimum Water Temperature — Cold Start',code:'DS-016',
+     params:[['Engine Temp','12°C ⚠','ew'],['Pre-heater','CHECK ⚠','ew']],
+     cause:'Cold ambient. Pre-heater failure. Not installed in cold regions.',
+     casc:['Hard start. Oil too viscous for proper lubrication on cold start.'],
+     action:'Check pre-heater. Run unloaded until temp reaches 20°C before applying load.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'g17',sev:'c',name:'Oil Sensor Failure — Start Blocked',code:'DS-017',
+     params:[['Oil Sensor','FAULT ✗','ef'],['Engine Start','BLOCKED ✗','ef']],
+     cause:'Oil pressure switch did not re-close after stop. Wiring fault to sensor.',
+     casc:['Site CANNOT start genset for next power cut — CRITICAL RISK'],
+     action:'DO NOT BYPASS safety. Replace oil pressure switch. Restore wiring.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'g18',sev:'m',name:'Phase Voltage Imbalance',code:'DS-018',
+     params:[['Phase L1','265V ⚠','ew'],['Phase L2-L3','230V OK','']],
+     cause:'Serious load imbalance between three phases causing voltage spike on one phase.',
+     casc:['Equipment damage risk on L1-connected loads — rectifier may alarm'],
+     action:'Balance loads across all three phases. Check distribution panel connections.',
+     sim:[-48.2,-48.0,-47.8,-47.5,-47.2,-47.0,-46.8,-46.5]}
+  ]
+},
+rect_zte:{
+  title:'Rectifier ZTE ZXDU68 — ZXD3000/ZXD2400 Modules',
+  desc:'AC→DC -48V conversion and battery management. CSU controller monitors SMR modules via CAN bus. Supports LVD/LLVD for load management. Module hot-swappable.',
+  tags:['ZXDU68','ZXD3000','ZXD2400','CSU Controller','CAN Bus','-48V DC','LVD','Hot-Swap'],
+  faults:[
+    {id:'rz01',sev:'c',name:'AC Input Switch Off',code:'ZXD-001',
+     params:[['AC Input','OFF ✗','ef'],['Mode','Battery Only ✗','ef']],
+     cause:'Main AC breaker open. Manual disconnect. Cable damage upstream.',
+     casc:['Battery backup active — autonomy ~4h at 200Ah full load'],
+     action:'Close main AC breaker. Check cable integrity. Monitor battery SOC in CSU.',
+     sim:[-48.2,-48.0,-47.5,-46.8,-45.5,-44.0,-42,-40]},
+    {id:'rz02',sev:'c',name:'AC Power Failure — Grid Loss',code:'ZXD-002',
+     params:[['AC Power','OFF ✗','ef'],['Battery','DISCHARGING ✗','ef']],
+     cause:'EDC grid failure. Upstream breaker tripped. External cable cut.',
+     casc:['Site on battery — start generator to avoid complete outage'],
+     action:'Start generator. Check AC transducer connection. Monitor SOC every 30min.',
+     sim:[-48.2,-47.8,-47.2,-46.5,-45.5,-44.0,-42,-40]},
+    {id:'rz03',sev:'m',name:'SMR Module Fault',code:'ZXD-003',
+     params:[['SMR Module','FAULT ✗','ef'],['Capacity','5/6 modules ⚠','ew']],
+     cause:'Module capacitor failure. IGBT damage from surge. Overtemperature.',
+     casc:['Reduced charging capacity — risk if more modules fail'],
+     action:'Hot-swap: pull faulty module, insert replacement ZXD3000. Wait 30s self-test.',
+     sim:[-48.2,-48.1,-48.0,-48.0,-47.9,-47.9,-47.8,-47.8]},
+    {id:'rz04',sev:'c',name:'DC Output Undervoltage — Cascade Failure',code:'ZXD-004',
+     params:[['DC Output','-44.1V ✗','ef'],['Active Modules','2/6 ✗','ef']],
+     cause:'Multiple module failures. System overloaded. AC undervoltage input.',
+     casc:['IDU','BBU','All Antennas — equipment resets below -44V'],
+     action:'CSU: Ctrl > SMR Ctrl > Wake Up. Reduce load. Check AC input 80-300V range.',
+     sim:[-48.2,-47.5,-46.5,-45.5,-44.5,-44.0,-43.5,-43.0]},
+    {id:'rz05',sev:'m',name:'DC Output Overvoltage',code:'ZXD-005',
+     params:[['DC Output','-57.8V ⚠','ew'],['Battery Risk','OVERCHARGING ⚠','ew']],
+     cause:'CSU float voltage misconfigured. Temperature sensor error. CSU hardware fault.',
+     casc:['Battery overcharging — accelerated aging and reduced service life'],
+     action:'Check CSU float voltage parameter (nominal -53.5V). Recalibrate or replace CSU.',
+     sim:[-48.2,-50,-52,-55,-57.8,-57.8,-57.8,-57.8]},
+    {id:'rz06',sev:'m',name:'Battery Discharging — Insufficient Modules',code:'ZXD-006',
+     params:[['Battery','DISCHARGING ⚠','ew'],['SOC','62% ↓','ew']],
+     cause:'Load exceeds rectifier capacity. Modules in energy-saving sleep mode.',
+     casc:['LVD will trigger if SOC reaches critical threshold'],
+     action:'Wake all modules: CSU > Ctrl > SMR. Reduce load. Calculate autonomy.',
+     sim:[-48.2,-48.0,-47.8,-47.5,-47.2,-46.8,-46.2,-45.5]},
+    {id:'rz07',sev:'c',name:'Battery SOC Critical — LVD Triggered',code:'ZXD-007',
+     params:[['Battery SOC','18% ✗','ef'],['LVD Status','TRIGGERED ✗','ef']],
+     cause:'Prolonged AC failure. Insufficient battery capacity for load duration.',
+     casc:['IDU and secondary loads disconnected by LVD protection'],
+     action:'RESTORE AC IMMEDIATELY. Do not reconnect loads until SOC > 50%.',
+     sim:[-48.2,-47.5,-46.8,-46.0,-45.2,-44.5,-44.0,-43.5]},
+    {id:'rz08',sev:'m',name:'SMR Communication Failure — CAN Bus',code:'ZXD-008',
+     params:[['CSU-SMR','COMM FAIL ⚠','ew'],['Module Count','UNKNOWN ⚠','ew']],
+     cause:'CAN bus lost after hot-swap. Module address conflict. Connector fault.',
+     casc:['CSU cannot manage modules — autonomous operation mode, no battery mgmt'],
+     action:'CSU > Ctrl > SMR Ctrl > Count. Remove/reinsert module to reset CAN bus.',
+     sim:[-48.2,-48.1,-48.1,-48.0,-48.0,-48.0,-48.0,-47.9]},
+    {id:'rz09',sev:'m',name:'Rectifier Overtemperature',code:'ZXD-009',
+     params:[['Rectifier Temp','72°C ⚠','ew'],['Fan Speed','HIGH ⚠','ew']],
+     cause:'Blocked air filter. Fan failure. Ambient temperature above 55°C.',
+     casc:['Module auto-derates output — reduced charging and autonomy capacity'],
+     action:'Clean fan filter. Check fan operation. Verify room temp is within -20 to 55°C.',
+     sim:[-48.2,-48.1,-48.0,-47.9,-47.8,-47.7,-47.6,-47.5]}
+  ]
+},
+rect_hw:{
+  title:'Rectifier Huawei ETP48200 — R4850G/R4850G2 Modules',
+  desc:'Huawei power system with SMU02B monitoring unit. R4850G2 modules (4000W each), hot-swappable. Battery management via LLVD. Communication via CAN bus.',
+  tags:['ETP48200','R4850G2','SMU02B','LLVD','CAN Bus','-48V DC','4000W/module'],
+  faults:[
+    {id:'rh01',sev:'c',name:'AC Power Failure',code:'HW-001',
+     params:[['AC Input','FAILED ✗','ef'],['Battery','DISCHARGING ✗','ef']],
+     cause:'Grid failure. Upstream breaker. Cable damage.',
+     casc:['Site on battery — ~4h at full load 200Ah'],
+     action:'Start generator. Check AC breaker 85-300V. Monitor battery SOC on SMU02B.',
+     sim:[-48.2,-47.8,-47.2,-46.5,-45.5,-44.5,-43.5,-42]},
+    {id:'rh02',sev:'m',name:'R4850G Module Fault — Red LED',code:'HW-002',
+     params:[['Module LED','RED ✗','ef'],['Output','FAILED ✗','ef']],
+     cause:'Module capacitor or IGBT failure. Input undervoltage. Overtemperature.',
+     casc:['Reduced system capacity — risk if more modules fail'],
+     action:'Red LED = faulty. Hot-swap: pull by handle. Insert R4850G2. Wait 30s.',
+     sim:[-48.2,-48.1,-48.0,-48.0,-47.9,-47.9,-47.8,-47.8]},
+    {id:'rh03',sev:'m',name:'DC Output High Voltage',code:'HW-003',
+     params:[['DC Voltage','-57.5V ⚠','ew'],['Battery','OVERCHARGE RISK ⚠','ew']],
+     cause:'SMU float voltage misconfigured. Temperature compensation sensor error.',
+     casc:['Battery overcharging — premature aging'],
+     action:'SMU > System > Battery > Float Voltage. Nominal -53.5V. Recalibrate temp sensor.',
+     sim:[-48.2,-50,-53,-55.5,-57.5,-57.5,-57.5,-57.5]},
+    {id:'rh04',sev:'c',name:'DC Output Low Voltage — Cascade',code:'HW-004',
+     params:[['DC Voltage','-44.5V ✗','ef'],['Active Modules','2/4 ✗','ef']],
+     cause:'Multiple module failures. Load exceeds system capacity.',
+     casc:['IDU','BBU','All Antennas — equipment resets below -44V'],
+     action:'SMU > Rectifier > Wake All. Critical: equipment resets below -44V.',
+     sim:[-48.2,-47.5,-46.5,-45.5,-44.5,-44.0,-43.5,-43.0]},
+    {id:'rh05',sev:'m',name:'Battery Low Voltage — LLVD Warning',code:'HW-005',
+     params:[['Battery V','-46.8V ⚠','ew'],['SOC','22% ⚠','ew']],
+     cause:'Prolonged AC failure. Load exceeds battery capacity. Battery aging.',
+     casc:['LLVD triggers at -47.1V disconnecting secondary loads'],
+     action:'URGENT: <45min autonomy. Restore AC or start generator immediately.',
+     sim:[-48.2,-47.8,-47.5,-47.2,-46.8,-46.5,-46.2,-45.8]},
+    {id:'rh06',sev:'c',name:'Battery Fuse/Breaker Open — No Backup',code:'HW-006',
+     params:[['Battery','DISCONNECTED ✗','ef'],['Backup','NONE ✗','ef']],
+     cause:'Blown fuse. Tripped circuit breaker. Wiring fault or short circuit.',
+     casc:['CRITICAL: Any AC interruption = immediate site shutdown with no backup'],
+     action:'Check fuse/breaker. Do NOT restore if short circuit suspected. Inspect wiring.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rh07',sev:'m',name:'System Overtemperature',code:'HW-007',
+     params:[['System Temp','70°C ⚠','ew'],['Fan Speed','MAX ⚠','ew']],
+     cause:'Shelter AC failure. Blocked air inlet. Ambient above 55°C.',
+     casc:['R4850G2 modules derate output above 55°C ambient'],
+     action:'Check shelter AC. Clean cabinet air inlet filters. Replace fan tray.',
+     sim:[-48.2,-48.1,-48.0,-47.9,-47.8,-47.7,-47.6,-47.5]},
+    {id:'rh08',sev:'m',name:'SMU02B Monitoring Unit Fault',code:'HW-008',
+     params:[['SMU Status','FAULT ⚠','ew'],['Remote Mgmt','LOST ⚠','ew']],
+     cause:'SMU power supply fault. Firmware corruption. CAN bus error.',
+     casc:['Rectifiers continue standalone — no battery management or remote monitoring'],
+     action:'Hold Reset button 5s to restart SMU. Update firmware. Replace if persists.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+battery:{
+  title:'VRLA Battery Bank — 200Ah -48V Backup',
+  desc:'Valve-Regulated Lead-Acid batteries providing autonomy during AC failures. Critical parameters: temperature, charge cycles, SOC, internal resistance. Regular testing required.',
+  tags:['VRLA','200Ah','-48V','Lead-Acid','Float Charge','Equalization','LVD','SOH Test'],
+  faults:[
+    {id:'b01',sev:'c',name:'Deep Discharge — Below -42V (Permanent Damage)',code:'BAT-001',
+     params:[['Battery V','-41.5V ✗','ef'],['SOC','5% ✗','ef']],
+     cause:'Prolonged AC failure without generator. LVD failure. Excessive load duration.',
+     casc:['Permanent battery damage. Service life reduced 50-80%. Capacity loss.'],
+     action:'Do NOT immediately recharge at full rate. Slow recharge cycle. Test capacity.',
+     sim:[-48.2,-47.5,-46.5,-45.5,-44.5,-43.5,-42.5,-41.5]},
+    {id:'b02',sev:'m',name:'Battery Overtemperature — Thermal Runaway Risk',code:'BAT-002',
+     params:[['Bat Temp','45°C ⚠','ew'],['Float Voltage','ELEVATED ⚠','ew']],
+     cause:'Shelter overheating. Near heat sources. Float voltage too high causing gassing.',
+     casc:['FIRE RISK if temperature exceeds 55°C. Accelerated aging.'],
+     action:'Cool shelter. Check float voltage. Move batteries away from heat sources.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'b03',sev:'m',name:'High Internal Resistance — Capacity Loss',code:'BAT-003',
+     params:[['Internal Res','HIGH ⚠','ew'],['Effective Cap','<60% ⚠','ew']],
+     cause:'Battery aging (>5 years). Sulfation from partial discharges. Deep discharge history.',
+     casc:['Reduced autonomy — actual capacity less than rated. Surprise failures.'],
+     action:'Equalization charge. Conductance test each string. Replace if resistance >80% increase.',
+     sim:[-48.2,-47.8,-47.2,-46.5,-45.5,-44.5,-43.5,-42.5]},
+    {id:'b04',sev:'c',name:'Electrolyte Loss — Valve Failure',code:'BAT-004',
+     params:[['Electrolyte','LOSS DETECTED ✗','ef'],['Battery','COMPROMISED ✗','ef']],
+     cause:'VRLA valve failure allowing gas escape. Physical damage. Overcharging gassing.',
+     casc:['EXPLOSION RISK. Hydrogen gas release. Immediate removal required.'],
+     action:'SAFETY: Disconnect and remove battery. Ventilate shelter. Replace affected string.',
+     sim:[-48.2,-48.0,-47.5,-46.8,-46.0,-45.0,-44,-43]},
+    {id:'b05',sev:'m',name:'Battery String Imbalance — Weak Cell',code:'BAT-005',
+     params:[['String Voltage','UNBALANCED ⚠','ew'],['Weak Cell','DETECTED ⚠','ew']],
+     cause:'One or more weak cells dragging down overall string capacity and voltage.',
+     casc:['Reduced autonomy. Accelerated degradation of weak cells.'],
+     action:'Measure individual cell voltages. Replace weak cells. Perform equalization charge.',
+     sim:[-48.2,-47.9,-47.5,-47.0,-46.4,-45.7,-44.8,-44]},
+    {id:'b06',sev:'m',name:'Insufficient Float Charge Voltage',code:'BAT-006',
+     params:[['Float Voltage','-51.2V ⚠','ew'],['SOC','SLOWLY FALLING ⚠','ew']],
+     cause:'Rectifier float voltage set too low. Temperature compensation error.',
+     casc:['Battery gradually self-discharges — low SOC surprise during next power cut'],
+     action:'Check rectifier float voltage (nominal -53.5V). Recalibrate CSU/SMU.',
+     sim:[-48.2,-48.0,-47.8,-47.5,-47.2,-46.8,-46.3,-45.8]},
+    {id:'b07',sev:'m',name:'Battery End of Service Life',code:'BAT-007',
+     params:[['Battery Age','>5 years ⚠','ew'],['Capacity','<50% rated ⚠','ew']],
+     cause:'VRLA service life 3-5 years depending on temperature, cycles, and maintenance.',
+     casc:['Autonomy <2h instead of rated 4h — site at risk during long power cuts'],
+     action:'Schedule replacement campaign. Perform capacity test to confirm. Plan logistics.',
+     sim:[-48.2,-47.8,-47.2,-46.4,-45.5,-44.5,-43.5,-42.5]},
+    {id:'b08',sev:'c',name:'Thermal Runaway — Emergency',code:'BAT-008',
+     params:[['Bat Temp','52°C ⚠','ef'],['Self-heating','ACCELERATING ✗','ef']],
+     cause:'High ambient + high float voltage = self-heating cycle that accelerates.',
+     casc:['FIRE RISK. Adjacent equipment at risk. Evacuation may be required.'],
+     action:'DISCONNECT BATTERY IMMEDIATELY. Cool shelter to <25°C before reconnecting.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+idu:{
+  title:'IDU ZTE ZXMW NR8250 — Cards & Boards',
+  desc:'Indoor Unit for microwave backhaul. Boards: CC (Control+Clock), RMU (Radio), RTU (Tributary E1), SA (Site Alarm), NE (Network Element). Each board has independent failure modes including restart procedures.',
+  tags:['ZXMW NR8250','CC Board','RMU Board','RTU Board','SA Board','PTP 1588','Warm Restart','Board Reset'],
+  faults:[
+    {id:'i01',sev:'c',name:'Radio Link Failure — IF Unlocked',code:'NR-001',
+     params:[['IF Status','UNLOCKED ✗','ef'],['BW Used','0% ✗','ef']],
+     cause:'IF cable damage IDU→ODU. RMU board failure. ODU misalignment or fault.',
+     casc:['All microwave traffic interrupted — complete backhaul loss'],
+     action:'Check IF coaxial cable IDU→ODU. Verify ODU alignment. Replace RMU board.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i02',sev:'c',name:'RMU Board Failure — Radio Module',code:'NR-002',
+     params:[['RMU Board','FAULT ✗','ef'],['IF Link','DOWN ✗','ef']],
+     cause:'RMU board hardware failure. Power supply to board unstable. Software crash.',
+     casc:['Complete microwave link loss until board replaced'],
+     action:'Reset RMU via LMT: Maintenance > NE > Board Reset. Replace board if persists.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i03',sev:'c',name:'CC Board Failure — Complete IDU Down',code:'NR-003',
+     params:[['CC Board','FAULT ✗','ef'],['IDU Mgmt','LOST ✗','ef']],
+     cause:'CC board hardware fault. Management network loss. Software exception.',
+     casc:['Complete IDU management loss — all services down'],
+     action:'Warm restart IDU via LMT. If unreachable, power cycle IDU chassis.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i04',sev:'c',name:'RS-LOS — Fiber Signal Loss',code:'NR-004',
+     params:[['Optical RX','NO SIGNAL ✗','ef'],['Packet Loss','100% ✗','ef']],
+     cause:'Fiber broken or bent. Dirty connector. Optical module failed. LOS from upstream.',
+     casc:['All fiber-based traffic interrupted'],
+     action:'Check fiber cable. Clean connectors IEC 61300-3-35. Enable laser via LMT.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i05',sev:'c',name:'RTU Board — E1 Tributary Failure',code:'NR-005',
+     params:[['E1 Ports','ALL DOWN ✗','ef'],['RTU Board','FAULT ✗','ef']],
+     cause:'RTU board hardware failure. E1 cable reversal at DDF. Board connector fault.',
+     casc:['All E1 tributary traffic down — voice and legacy data loss'],
+     action:'Check E1 cable polarity at DDF. Reset RTU board. Replace if alarm persists.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i06',sev:'c',name:'Clock Module Fault — ALL Services Interrupted',code:'NR-006',
+     params:[['System Clock','FAULT ✗','ef'],['All Services','INTERRUPTED ✗','ef']],
+     cause:'Clock PLL unlocked. All clock references lost. RCUB board hardware failure.',
+     casc:['ALL services interrupted immediately — highest priority alarm'],
+     action:'Reset RCUB board via LMT. Replace RCUB if alarm persists after reset.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i07',sev:'c',name:'Board Not in Position',code:'NR-007',
+     params:[['Board Status','NOT INSERTED ✗','ef'],['Services','PARTIAL DOWN ✗','ef']],
+     cause:'Board physically removed during maintenance. Not properly seated. Chassis damage.',
+     casc:['Partial service loss depending on board type and configuration'],
+     action:'Physically insert/reseat board firmly. Verify board type matches NMS config.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i08',sev:'c',name:'IDU Warm Restart — Full Traffic Interruption',code:'NR-008',
+     params:[['IDU Status','RESTARTING ✗','ef'],['Traffic','DOWN 3-5min ✗','ef']],
+     cause:'Software exception. Remote restart command. Power interruption and recovery.',
+     casc:['All IDU traffic down during restart (~3-5 minutes typical)'],
+     action:'Wait for restart completion (~5 min). Verify all services restore. Check alarm list.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i09',sev:'m',name:'1588 PTP Sync Failure',code:'NR-009',
+     params:[['PTP Service','FAILED ⚠','ew'],['Clock Sync','DEGRADED ⚠','ew']],
+     cause:'PTP master unreachable. Network packet loss on PTP path. Domain misconfigured.',
+     casc:['Timing degradation affects LTE FDD services sensitive to clock accuracy'],
+     action:'Check PTP master clock. Verify domain number. Check ACL not blocking PTP.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i10',sev:'m',name:'CPU Overload',code:'NR-010',
+     params:[['CPU Load','92% ⚠','ew'],['NMS Response','SLOW ⚠','ew']],
+     cause:'Too many active services. Software loop. Broadcast storm on data interfaces.',
+     casc:['Management access very slow — difficult to intervene during alarms'],
+     action:'Delete ineffective traffic in LMT. Warm start if CPU stays above 85%.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i11',sev:'c',name:'ODU Mute Active — TX Power Zero',code:'NR-011',
+     params:[['ODU Mute','ENABLED ✗','ef'],['TX Power','0 dBm ✗','ef']],
+     cause:'Mute feature accidentally activated during maintenance. Test not deactivated.',
+     casc:['Microwave link completely down — all traffic interrupted'],
+     action:'Disable Mute Enable in ODU config via LMT immediately. Test/maintenance only.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i12',sev:'m',name:'Frame Loss Rate Exceeding Threshold',code:'NR-012',
+     params:[['Frame Loss','4.2% ⚠','ew'],['Latency','5.8ms ⚠','ew']],
+     cause:'Physical layer errors. Network congestion. Ethernet loop creating broadcast storm.',
+     casc:['Service quality degradation — voice and data quality affected'],
+     action:'Check physical layer codes. Check bandwidth usage. Verify no Ethernet loops.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i13',sev:'m',name:'IDU Overheated',code:'NR-013',
+     params:[['IDU Temp','72°C ⚠','ew'],['Fan Status','LOW SPEED ⚠','ew']],
+     cause:'Shelter AC failure. Fan wrong position or faulty. Ventilation slots blocked.',
+     casc:['Board errors and service degradation. Risk of board shutdown at high temp.'],
+     action:'Check shelter AC. Verify fan position and operation. Clean ventilation slots.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i14',sev:'m',name:'Ethernet Port Disconnected',code:'NR-014',
+     params:[['ETH Port','DISCONNECTED ✗','ef'],['Packet Loss','100% on port ✗','ef']],
+     cause:'Cable disconnected. RJ45 connector damaged. Port hardware fault.',
+     casc:['Loss of all Ethernet-connected services on this specific port'],
+     action:'MAC loopback test. If OK: replace cable. If fails: replace board.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'i15',sev:'m',name:'AC Power Off — IDU on DC Battery',code:'NR-015',
+     params:[['AC Power','OFF ✗','ef'],['Battery Backup','ACTIVE ⚠','ew']],
+     cause:'AC supply to IDU cabinet off. Cabinet breaker tripped. Socket cable fault.',
+     casc:['IDU running on battery only — limited autonomy, monitor SOC'],
+     action:'Check IDU AC input. Verify cabinet breaker. Check monitoring unit socket.',
+     sim:[-48.2,-48.0,-47.8,-47.5,-47.0,-46.4,-45.6,-44.7]}
+  ]
+},
+odu:{
+  title:'ODU — Outdoor Unit (MW Radio Head)',
+  desc:'Converts IF signal from IDU to RF for microwave transmission. Passive cooling, outdoor IP66. Powered by IDU via IF coaxial cable. Direct sunlight and temperature are critical factors.',
+  tags:['ODU','IF Coaxial','11GHz','256QAM','ATPC','IP66','Passive Cooling','Passive Alignment'],
+  faults:[
+    {id:'o01',sev:'c',name:'ODU Hardware Fault — Internal Failure',code:'ODU-001',
+     params:[['ODU Status','HARDWARE FAIL ✗','ef'],['RSSI','-110 dBm ✗','ef']],
+     cause:'ODU internal circuit failure. Overtemperature damage. Lightning strike.',
+     casc:['Complete microwave link loss — no bypass possible'],
+     action:'Power off then restart ODU via IDU config. If persists, replace ODU unit.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'o02',sev:'c',name:'ODU Link Broken — IF Cable or Power Lost',code:'ODU-002',
+     params:[['IF Cable','BROKEN ✗','ef'],['ODU Power','LOST ✗','ef']],
+     cause:'IF coaxial cable damaged. Connector corrosion. Power supply outside 40-60V range.',
+     casc:['Complete microwave link loss'],
+     action:'Check ODU power voltage (40-60V). Inspect IF cable. Replace RMU board if cable OK.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'o03',sev:'c',name:'Config Mismatch — Link Cannot Lock',code:'ODU-003',
+     params:[['Frequency','MISMATCH ✗','ef'],['Modulation','MISMATCH ✗','ef']],
+     cause:'ODU frequency, modulation, or bandwidth configured differently at each end.',
+     casc:['Link cannot lock — complete traffic loss until configs are aligned'],
+     action:'Check config at both ends: frequency, modulation, bandwidth must be identical.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'o04',sev:'m',name:'ODU Overtemperature — TX Power Derated',code:'ODU-004',
+     params:[['ODU Temp','75°C ⚠','ew'],['TX Power','DERATED ↓','ew']],
+     cause:'Direct sunlight without sun shield. Ambient temperature above 45°C.',
+     casc:['TX power derated — link margin reduced, risk in bad weather'],
+     action:'Install ODU sun shield. Check mounting orientation. Clear ventilation fins.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'o05',sev:'m',name:'RSSI Too High — Overdriven Input',code:'ODU-005',
+     params:[['RSSI','-52 dBm ⚠','ew'],['Near End','OVERDRIVEN ⚠','ew']],
+     cause:'Short link. TX power too high at remote end. Antenna gain too high.',
+     casc:['Non-linearity and interference on adjacent channels'],
+     action:'Adjust ODU threshold. Reduce TX power at remote end. Recalculate link budget.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'o06',sev:'m',name:'Atmospheric Fading — MW Link Degradation',code:'ODU-006',
+     params:[['RSSI','-89 dBm ↓','ew'],['Modulation','16QAM ↓','ew']],
+     cause:'Rain attenuation. Atmospheric ducting. Seasonal multipath fading.',
+     casc:['Throughput reduced — high-priority traffic only during fading event'],
+     action:'Monitor RSSI trend. Enable ATPC. Verify antenna alignment. Alert NOC.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+sfp:{
+  title:'SFP Modules & Fiber Optic — Optical Interfaces',
+  desc:'SFP transceivers for CPRI, fiber backhaul, and management. Most common cause of intermittent link issues. Requires proper cleaning, handling, and connector type matching.',
+  tags:['SFP','1310nm Single-mode','850nm Multi-mode','LC/APC','LC/UPC','CPRI 6Gbps','OTDR','IEC 61300'],
+  faults:[
+    {id:'sf01',sev:'c',name:'SFP Module Not in Position',code:'SFP-001',
+     params:[['SFP Status','NOT INSERTED ✗','ef'],['Link','NO SIGNAL ✗','ef']],
+     cause:'SFP not properly inserted in port. Wrong SFP type installed. Port damaged.',
+     casc:['Complete loss of connection on this port — fiber link or CPRI down'],
+     action:'Remove and firmly reinsert SFP. Check compatibility: 1310nm for distances >100m.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'sf02',sev:'c',name:'Optical Fiber Cut — Physical Break',code:'SFP-002',
+     params:[['RX Power','-40 dBm ✗','ef'],['OPT LED','RED ✗','ef']],
+     cause:'Physical cable break. Sharp bend below 30mm radius. Connector pulled out.',
+     casc:['Complete link loss on this fiber — CPRI or backhaul down'],
+     action:'Use OTDR to locate break. Check fiber route for damage. Replace section.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'sf03',sev:'m',name:'Dirty Optical Connector — Most Common Issue',code:'SFP-003',
+     params:[['RX Power','-22 dBm ⚠','ew'],['BER','ELEVATED ⚠','ew']],
+     cause:'Dust contamination on LC connector end-face. Most common cause of CPRI issues.',
+     casc:['Intermittent drops. BER increase. Risk of CPRI frame unlock.'],
+     action:'Clean with IEC 61300-3-35 approved cleaner. Inspect with fiber scope.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'sf04',sev:'m',name:'Optical Power Below Threshold',code:'SFP-004',
+     params:[['RX Power','-28 dBm ⚠','ew'],['Threshold','-18 dBm min','']],
+     cause:'Long fiber run. Excessive connectors/splices causing loss accumulation.',
+     casc:['Link instability at current margin — outage risk in adverse conditions'],
+     action:'OTDR measurement. Reduce connector count. Upgrade to longer-range SFP.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'sf05',sev:'m',name:'SFP Laser Diode Failure',code:'SFP-005',
+     params:[['TX Power','OUT OF SPEC ✗','ef'],['SFP Module','DEGRADED ✗','ef']],
+     cause:'Laser diode end-of-life. ESD damage from improper handling. Internal fault.',
+     casc:['Link goes down when SFP fails completely — no TX output'],
+     action:'Replace SFP module. Use ESD wrist strap. Never look into active fiber port.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'sf06',sev:'m',name:'Wrong SFP Type — Wavelength Mismatch',code:'SFP-006',
+     params:[['SFP Type','INCOMPATIBLE ⚠','ew'],['Link','UNSTABLE ⚠','ew']],
+     cause:'850nm SFP used where 1310nm required. Multi-mode fiber with single-mode SFP.',
+     casc:['High BER. Link instability. Possible complete failure on longer runs.'],
+     action:'Match wavelength and fiber type. CPRI requires 1310nm SM for distances >300m.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'sf07',sev:'m',name:'APC/UPC Connector Mismatch',code:'SFP-007',
+     params:[['Connector','APC/UPC MIX ⚠','ew'],['Return Loss','HIGH ⚠','ew']],
+     cause:'APC (green, 8° angle) and UPC (blue, flat) connectors mixed in same link.',
+     casc:['High return loss causing BER increase. Long-term SFP laser degradation.'],
+     action:'Use matching types: APC with APC, UPC with UPC. Replace hybrid patch cords.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+bbu:{
+  title:'BBU ZTE ZXSDR B8200 — Boards & Restart Procedures',
+  desc:'2U MicroTCA baseband unit. Multi-standard GSM/UMTS/LTE. Key boards: CC (Control+Clock), UBPG (GSM baseband), BPL (LTE), SA (Site Alarm), PM (Power), UCI (GPS). Each board restartable individually.',
+  tags:['B8200','CC Board','UBPG Board','BPL Board','SA Board','PM Module','UCI GPS','Board Reset','Warm Restart','Cold Restart'],
+  faults:[
+    {id:'bb01',sev:'c',name:'UBPG Board Overtemperature — Cells Down',code:'B82-001',
+     params:[['UBPG Temp','82°C ✗','ef'],['Cells Active','0/6 ✗','ef']],
+     cause:'FAM fan failure. Blocked air filter. Shelter AC off. Room temperature too high.',
+     casc:['All GSM/LTE cells down — complete coverage loss on this BBU'],
+     action:'Check room AC. Clean FAM air filter. Wait for cooling. LMT: Maintenance > Board > Reset.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb02',sev:'c',name:'CC Board Failure — System Management Lost',code:'B82-002',
+     params:[['CC Board','FAULT ✗','ef'],['LMT Access','LOST ✗','ef']],
+     cause:'CC board hardware failure. Power supply issue to board. Software exception.',
+     casc:['Complete BBU management loss. Standby CC should take over in <50ms.'],
+     action:'Trigger CC switchover via LMT before removal. Replace faulty CC board.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb03',sev:'c',name:'GPS Clock Lost Critical (198093024)',code:'B82-003',
+     params:[['GPS Status','FAILED ✗','ef'],['Clock Precision','DEGRADING ✗','ef']],
+     cause:'GPS antenna cable damaged. Antenna obstructed by new construction. Module failure.',
+     casc:['LTE timing critical services affected. PLL may unlock causing full outage.'],
+     action:'URGENT: Check GPS antenna cable. Configure BITS or 1588 PTP as backup.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb04',sev:'c',name:'Clock PLL Unlocked — ALL Services Down (198093814)',code:'B82-004',
+     params:[['Clock PLL','UNLOCKED ✗','ef'],['All Services','INTERRUPTED ✗','ef']],
+     cause:'GPS lost for extended period. Clock hardware failure. All clock references lost.',
+     casc:['ALL GSM/LTE/5G services immediately interrupted — highest priority'],
+     action:'Resolve GPS alarm first. Reset CC board via LMT. ALL SERVICES AFFECTED.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb05',sev:'c',name:'PM Module Failure — Power to BBU Lost',code:'B82-005',
+     params:[['PM Module','FAULT ✗','ef'],['+12V Output','FAILED ✗','ef']],
+     cause:'PM module internal failure. DC -48V input undervoltage. Backplane connector loose.',
+     casc:['All BBU boards lose power — complete site radio outage'],
+     action:'Check -48V DC input first. Inspect PM LED indicators. Replace PM module.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb06',sev:'c',name:'DSP Hardware Failure (198093055)',code:'B82-006',
+     params:[['DSP Status','HARDWARE FAIL ✗','ef'],['Board Active','NO ✗','ef']],
+     cause:'DSP chip failure. Unstable +12V supply from PM. Physical board damage.',
+     casc:['All cells on this UBPG board go down — partial site outage'],
+     action:'Collect LMT log before removing. Check PM output +12V. Replace UBPG.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb07',sev:'m',name:'CPRI Link Degradation (198093053)',code:'B82-007',
+     params:[['CPRI BER','HIGH ⚠','ew'],['RRUs Connected','2/3 ⚠','ew']],
+     cause:'Dirty CPRI optical connector. Fiber damage. SFP module degraded.',
+     casc:['Some RRUs disconnect — partial coverage loss by sector'],
+     action:'Clean CPRI connectors at BBU and RRU. Check fiber run. Measure optical power.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb08',sev:'c',name:'BBU Full Restart — Cold Boot',code:'B82-008',
+     params:[['BBU Status','COLD RESTART ✗','ef'],['Traffic Down','8-12 minutes ✗','ef']],
+     cause:'Critical software exception. Hardware replacement. Emergency intervention.',
+     casc:['All cells down 8-12 minutes for cold restart — use warm restart when possible'],
+     action:'Prefer warm restart for faster recovery. Cold boot: power cycle chassis.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb09',sev:'m',name:'BBU Warm Restart — Software Restart',code:'B82-009',
+     params:[['BBU Status','WARM RESTART ✗','ef'],['Traffic Down','3-5 minutes ✗','ef']],
+     cause:'Software exception. Planned maintenance. Remote restart command via NMS.',
+     casc:['All cells down 3-5 minutes for warm restart'],
+     action:'LMT: Maintenance > NE > Warm Restart. Schedule low-traffic window (02:00-04:00).',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb10',sev:'m',name:'Single Board Restart — UBPG/BPL',code:'B82-010',
+     params:[['Board Status','RESTARTING ✗','ef'],['Cells on Board','DOWN 2-3min ✗','ef']],
+     cause:'Software exception on specific board. Selective restart command issued.',
+     casc:['Only cells on this specific board go down (~2-3 min). Other boards unaffected.'],
+     action:'LMT: Maintenance > Board > Reset > Select slot. Less impact than full BBU restart.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb11',sev:'m',name:'SA Board Dry Contact Alarm',code:'B82-011',
+     params:[['Dry Contact','TRIGGERED ⚠','ew'],['Ext Device','ALARM ⚠','ew']],
+     cause:'External device connected to SA board dry contact triggered (genset, door, smoke, fuel).',
+     casc:['Informational alarm — service impact depends on external device failure'],
+     action:'Check external device connected to triggered dry contact. Verify threshold in LMT.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb12',sev:'m',name:'RTWP High — Uplink Interference (198093864)',code:'B82-012',
+     params:[['RTWP','-95 dBm ⚠','ew'],['Call Quality','DEGRADED ⚠','ew']],
+     cause:'External jamming source. PIM on feeder cable. Antenna azimuth interference.',
+     casc:['Uplink quality degraded — dropped calls and reduced throughput'],
+     action:'Check RTWP threshold in LMT. Identify jamming sources. PIM test on feeder.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb13',sev:'c',name:'Baseband Service Abnormal (198094029)',code:'B82-013',
+     params:[['Cell Service','INTERRUPTED ✗','ef'],['Active Cells','0/6 ✗','ef']],
+     cause:'Cell configuration error. Carrier frequency conflict. UBPG processing failure.',
+     casc:['Complete radio outage on this BBU — all subscribers affected'],
+     action:'Check cell config in LMT. Verify carrier frequency plan. Reset UBPG board.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb14',sev:'c',name:'UCI GPS Module — GNSS Fault',code:'B82-014',
+     params:[['GNSS Module','FAULT ✗','ef'],['Satellites','0 tracked ⚠','ew']],
+     cause:'GPS antenna cable open circuit. Lightning protector damaged. UCI hardware failure.',
+     casc:['Clock falls back to holdover — then degrades if not resolved'],
+     action:'Check GNSS coax cable. Inspect lightning protector. Replace UCI board.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'bb15',sev:'m',name:'1588 PTP Clock Fault (198092240)',code:'B82-015',
+     params:[['1588 PTP','FAULT ⚠','ew'],['Clock Source','DEGRADED ⚠','ew']],
+     cause:'PTP master unreachable. Packet loss on PTP path. Network asymmetry.',
+     casc:['Timing degradation for LTE/5G FDD synchronization precision'],
+     action:'Check PTP network path. Verify master clock active. Check ACL filtering PTP.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+rru:{
+  title:'RRU ZTE ZXSDR R8882/R8862 — RF, CPRI & PA',
+  desc:'Outdoor radio unit on tower. CPRI 6Gbps optical. -48V DC power via cable. Passive cooling IP65. PA with DPD calibration. LED indicators: RUN/ALM/VSWR1/VSWR2/OPT. Operating range: -40°C to +55°C.',
+  tags:['R8882','R8862','CPRI 6Gbps','PA + DPD','IP65','-48V DC','VSWR Auto-Protection','OPT LED','ALM LED'],
+  faults:[
+    {id:'rr01',sev:'c',name:'Antenna VSWR High → PA Auto-Disabled',code:'R88-001',
+     params:[['VSWR','4.2 ✗','ef'],['PA Status','DISABLED ✗','ef']],
+     cause:'Coax cable water ingress. Loose N-connector (needs 25 N·m). Antenna port fault.',
+     casc:['Complete coverage loss on this sector — VSWR LED RED'],
+     action:'Inspect coax and N-connector. Torque 25 N·m. Re-enable PA via LMT after fix.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr02',sev:'m',name:'VSWR Warning — Pre-alarm',code:'R88-002',
+     params:[['VSWR','2.1 ⚠','ew'],['TX Power','43 dBm','']],
+     cause:'Cable degradation starting. Connector beginning to corrode. Antenna port issue.',
+     casc:['Will escalate to rr01 critical at VSWR >3.0 — schedule maintenance'],
+     action:'Inspect cable and connectors. Apply weatherproofing tape. Monitor VSWR trend.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr03',sev:'c',name:'RRU Power Cut — DC -48V Lost',code:'R88-003',
+     params:[['DC Power','-48V LOST ✗','ef'],['RRU Status','OFFLINE ✗','ef']],
+     cause:'DC cable damage on tower run. DCDU fuse blown. Connector corrosion.',
+     casc:['All sectors on this RRU completely offline'],
+     action:'Check DC cable. Measure voltage at RRU PWR connector (-37V to -60V). Check fuse.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr04',sev:'c',name:'CPRI Uplink Optical Interrupted (198092290)',code:'R88-004',
+     params:[['CPRI Link','INTERRUPTED ✗','ef'],['OPT LED','RED ✗','ef']],
+     cause:'CPRI fiber break or sharp bend (<30mm radius). Dirty connector. SFP failed.',
+     casc:['All cells on this RRU go down — OPT LED RED confirms optical issue'],
+     action:'Check OPT LED RED. Clean CPRI connectors. Check fiber. Measure optical power.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr05',sev:'c',name:'CPRI Frame Unlock — DL/UL Sync Lost',code:'R88-005',
+     params:[['CPRI Sync','UNLOCKED ✗','ef'],['Frame Status','LOST ✗','ef']],
+     cause:'High BER on CPRI fiber. Dirty connectors. CPRI rate mismatch BBU vs RRU.',
+     casc:['All sectors on this RRU down until sync restored'],
+     action:'Check fiber quality. Clean connectors. Verify CPRI rate matches both ends.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr06',sev:'m',name:'Optical RX Signal Abnormal (198092431)',code:'R88-006',
+     params:[['RX Power','-25 dBm ⚠','ew'],['Threshold','-18 dBm min','']],
+     cause:'Dirty connector (most common). Fiber bends. Wrong SFP type. Long fiber run.',
+     casc:['Intermittent CPRI drops — intermittent coverage loss by sector'],
+     action:'Clean optical connectors with IEC-approved tool. Check fiber bends. Check SFP.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr07',sev:'c',name:'RF Group Unavailable — Hardware Fault',code:'R88-007',
+     params:[['RF Group','UNAVAILABLE ✗','ef'],['ALM LED','RED ✗','ef']],
+     cause:'RRU internal hardware failure. Power supply instability. Lightning damage.',
+     casc:['Complete coverage loss — ALM LED RED on all sectors this RRU'],
+     action:'Collect LMT log. Reset RRU via LMT. Check DC power stability. Replace if needed.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr08',sev:'c',name:'PA Disabled — Protection Triggered',code:'R88-008',
+     params:[['PA Status','DISABLED ✗','ef'],['TX Power','0 dBm ✗','ef']],
+     cause:'VSWR >3.0. Overtemperature. Overcurrent protection. Hardware fault.',
+     casc:['Coverage loss on sector — identify root cause before re-enabling PA'],
+     action:'Check VSWR and temp alarms first. Resolve root cause. Re-enable PA via LMT.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr09',sev:'c',name:'RF Board PLL Alarm (198092249)',code:'R88-009',
+     params:[['PLL','UNLOCKED ✗','ef'],['TX/RX','FAULT ✗','ef']],
+     cause:'GPS clock alarm on BBU propagating to RRU. CPRI frame sync lost. RF board fault.',
+     casc:['TX and RX both down — complete coverage loss on this RRU'],
+     action:'Check GPS/clock alarm on BBU first. Verify CPRI sync. Reset RRU.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr10',sev:'m',name:'RRU High Temperature — PA Derate (198092558)',code:'R88-010',
+     params:[['RRU Temp','72°C ⚠','ew'],['PA Output','DERATED ↓','ew']],
+     cause:'Direct sunlight without sun shield. Fins mounted vertically (wrong). Ambient >45°C.',
+     casc:['Reduced TX power — weaker coverage at cell edge. Shuts at 80°C.'],
+     action:'Mounting: fins horizontal for convection. Install sun shield. Clear 10cm around.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr11',sev:'m',name:'Abnormal TX Power (198092278)',code:'R88-011',
+     params:[['TX Power','37 dBm ⚠','ew'],['Config','43 dBm expected','']],
+     cause:'VSWR causing automatic power reduction. DPD calibration expired. Power circuit issue.',
+     casc:['Reduced coverage radius — cell edge UEs experience poor quality'],
+     action:'Check VSWR. Run DPD calibration: LMT > Maintenance > RRU > Calibration.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr12',sev:'m',name:'DPD Calibration Failure (198092364)',code:'R88-012',
+     params:[['DPD Status','UNCALIBRATED ⚠','ew'],['PA Linearity','DEGRADED ⚠','ew']],
+     cause:'Calibration run during high traffic. VSWR >1.5 during calibration. Temp extreme.',
+     casc:['Reduced PA efficiency. Higher adjacent channel interference (ACPR).'],
+     action:'Re-run at <20% traffic. Needs: temp 10-50°C, VSWR <1.5, stable DC power.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr13',sev:'c',name:'RRU Network Interrupted (198092433)',code:'R88-013',
+     params:[['CPRI','INTERRUPTED ✗','ef'],['BBU Comms','LOST ✗','ef']],
+     cause:'Complete CPRI communication loss. Fiber cut. RRU power loss. BBU port failure.',
+     casc:['All sectors on this RRU completely offline'],
+     action:'Check RRU PWR LED. Trace full fiber path. OTDR if available. Lightning damage?',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr14',sev:'m',name:'RRU Restart — Planned or Emergency',code:'R88-014',
+     params:[['RRU Status','RESTARTING ✗','ef'],['Cells Down','1-2 minutes ✗','ef']],
+     cause:'Software exception. Remote restart via LMT. Maintenance operation.',
+     casc:['Only sectors on this RRU down ~1-2 min. Other RRUs unaffected.'],
+     action:'LMT: Maintenance > RRU > Reset. Collect log before restart if possible.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'rr15',sev:'c',name:'SFP Optical Module Not in Position (198092289)',code:'R88-015',
+     params:[['SFP','NOT IN POSITION ✗','ef'],['CPRI','NO SIGNAL ✗','ef']],
+     cause:'SFP not inserted in RRU OPT port. Unseated by tower vibration. Wrong type.',
+     casc:['RRU isolated from BBU — all sectors on this RRU down'],
+     action:'Check RRU OPT port. Verify LC fiber properly seated. 1310nm SM for CPRI.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+antenna:{
+  title:'Antennas — GSM/LTE/5G & MW Dish',
+  desc:'Panel antennas and MW dishes on tower. Critical: azimuth, tilt, VSWR, gain, PIM. AISG protocol controls remote electrical tilt (RET). Lightning protection mandatory.',
+  tags:['GSM 900','LTE 1800','5G NR','MW Dish','VSWR','Azimuth','E-Tilt','AISG RET','PIM','Lightning Arrester'],
+  faults:[
+    {id:'an01',sev:'c',name:'VSWR High — Coax Cable Damage',code:'ANT-001',
+     params:[['VSWR','3.8 ✗','ef'],['RSRP','-93 dBm ↓','ew']],
+     cause:'Coax cable water ingress. Loose N-connector. Antenna port corrosion. Cable crushed.',
+     casc:['PA auto-shuts at VSWR >3.0. Complete coverage loss on this sector.'],
+     action:'Inspect coax cable and N-connector. Torque to 25 N·m. Apply weatherproofing.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'an02',sev:'m',name:'Antenna Azimuth Shifted',code:'ANT-002',
+     params:[['Azimuth','SHIFTED ⚠','ew'],['Coverage','MISALIGNED ⚠','ew']],
+     cause:'Wind storm shifted antenna bracket. Incorrect installation. Vandalism.',
+     casc:['Coverage hole in planned direction. Interference in unintended direction.'],
+     action:'Measure azimuth with compass. Re-align to planned azimuth ±2°. Secure bracket.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'an03',sev:'m',name:'AISG RET Motor Failure — E-Tilt Stuck',code:'ANT-003',
+     params:[['E-Tilt','STUCK ⚠','ew'],['AISG Comms','FAIL ⚠','ew']],
+     cause:'AISG RET motor failure. AISG cable break. Controller address conflict.',
+     casc:['Cannot remotely adjust coverage — requires field intervention on tower'],
+     action:'Check AISG cable. Verify controller address. Replace RET motor if needed.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'an04',sev:'m',name:'MW Dish Misalignment — Link Margin Reduced',code:'ANT-004',
+     params:[['RSSI','-89 dBm ↓','ew'],['Link Margin','3 dB ⚠','ew']],
+     cause:'Dish bracket loosened by wind. Pole settlement. Incorrect initial alignment.',
+     casc:['MW link margin critically reduced. Risk of link loss during rain or fading.'],
+     action:'Fine-align dish using NMS RSSI. Check bracket torque. Use alignment tool.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'an05',sev:'m',name:'PIM — Passive Intermodulation',code:'ANT-005',
+     params:[['RTWP','-93 dBm ⚠','ew'],['Call Quality','DEGRADED ⚠','ew']],
+     cause:'Loose connectors generating non-linear products. Corroded contacts. Damaged antenna.',
+     casc:['Uplink quality degraded — dropped calls and throughput reduction'],
+     action:'PIM test with PIM analyzer. Check all connectors for corrosion. Replace components.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'an06',sev:'m',name:'Atmospheric Fading — MW Link',code:'ANT-006',
+     params:[['RSSI','-89 dBm ↓','ew'],['Modulation','16QAM ↓','ew']],
+     cause:'Rain attenuation. Atmospheric ducting. Multipath fading (seasonal).',
+     casc:['MW throughput reduced — high-priority traffic only during fading event'],
+     action:'Monitor RSSI. Enable ATPC. Alert NOC for SLA. Verify antenna alignment.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'an07',sev:'c',name:'Lightning Damage — Arrester Bypassed',code:'ANT-007',
+     params:[['Antenna','DAMAGED ✗','ef'],['Lightning Arr','FAILED ✗','ef']],
+     cause:'Direct or nearby lightning strike. Lightning arrester saturated or failed.',
+     casc:['Antenna element failure. Possible RRU damage if arrester bypassed.'],
+     action:'Inspect antenna for physical damage. Replace lightning arrester. Check RRU.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+},
+clock:{
+  title:'Clock & Synchronization — GPS + PTP 1588 + BITS',
+  desc:'Synchronization chain critical for LTE FDD timing: GPS antenna → UCI module → CC board PLL → distributed to BBU/RRU → air interface. Holdover mode activates when all sources lost.',
+  tags:['GPS/GNSS','UCI Module','PTP 1588','BITS 2MHz','1PPS+TOD','SyncE','Holdover','G.8275.1','G.8272'],
+  faults:[
+    {id:'cl01',sev:'m',name:'GPS Clock Lost — Major (198093023)',code:'CLK-001',
+     params:[['GPS Status','LOST ⚠','ew'],['Mode','Holdover Active ⚠','ew']],
+     cause:'GPS antenna cable disconnected. Antenna obstructed. GPS signal blocked.',
+     casc:['System in holdover — clock precision degrades after ~24h holdover period'],
+     action:'Check GPS antenna cable. Verify clear sky view. Check for jamming sources.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'cl02',sev:'c',name:'GPS Clock Lost — Critical (198093024)',code:'CLK-002',
+     params:[['GPS Status','FAILED ✗','ef'],['Clock Precision','DEGRADING ✗','ef']],
+     cause:'GPS module hardware failure. Extended antenna outage. Complete GPS failure.',
+     casc:['Clock precision degrades — LTE timing affected. PLL may unlock soon.'],
+     action:'URGENT: Replace GPS receiver. Configure BITS or 1588 PTP as backup immediately.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'cl03',sev:'c',name:'Clock PLL Unlocked — ALL Services Down',code:'CLK-003',
+     params:[['PLL Status','UNLOCKED ✗','ef'],['All Services','INTERRUPTED ✗','ef']],
+     cause:'All clock references lost. Clock hardware failure. Extended holdover exceeded.',
+     casc:['ALL radio services immediately interrupted — highest priority alarm'],
+     action:'Restore GPS. Check BITS input. Reset CC board. CRITICAL — all services affected.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'cl04',sev:'m',name:'1588 PTP Service Setup Failure',code:'CLK-004',
+     params:[['PTP Service','FAILED ⚠','ew'],['Sync Quality','DEGRADED ⚠','ew']],
+     cause:'PTP master unreachable. Wrong domain number configured. ACL blocking PTP.',
+     casc:['Timing fallback to lower quality source or holdover mode'],
+     action:'Check PTP master active. Verify domain number. Check ACL/firewall for PTP.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'cl05',sev:'m',name:'GNSS Antenna Feeder Fault',code:'CLK-005',
+     params:[['GPS Cable','OPEN CIRCUIT ⚠','ew'],['Satellites','0 tracked ✗','ef']],
+     cause:'GPS coaxial cable open circuit. Lightning protector damaged. Connector pulled.',
+     casc:['GPS signal completely lost — system enters holdover'],
+     action:'Check GPS coax cable continuity. Inspect lightning protector. Replace if needed.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]},
+    {id:'cl06',sev:'m',name:'BITS Reference Source Lost',code:'CLK-006',
+     params:[['BITS Input','LOST ⚠','ew'],['Fallback','GPS or Holdover ⚠','ew']],
+     cause:'BITS cable disconnected from CC board REF port. Upstream BITS source failed.',
+     casc:['Timing falls back to next priority (GPS or holdover)'],
+     action:'Check BITS cable at CC board REF port. Verify upstream BITS source is active.',
+     sim:[-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2,-48.2]}
+  ]
+}
+};
+
+// Count total faults
+var totalFaults = Object.values(DB).reduce(function(a,c){return a+c.faults.length;},0);
+document.getElementById('fault-count').textContent = totalFaults + ' scénarios — données terrain MTN Congo intégrées';
+// ═══════════════════════ LOGIC ═══════════════════════════════════════════════
+var apiKey = localStorage.getItem('teksi_v4_key')||'';
+var curComp=null, curFault=null, filterMode='all', chatCtx=[];
+
+function saveKey(){
+  var k=document.getElementById('api-input').value.trim();
+  if(k){apiKey=k;localStorage.setItem('teksi_v4_key',k);}
+  document.getElementById('api-modal').style.display='none';
+  updateStatus();
+}
+function skipKey(){document.getElementById('api-modal').style.display='none';updateStatus();}
+function updateStatus(){
+  var s=document.getElementById('ai-stat'),b=document.getElementById('tb');
+  if(apiKey){s.textContent='TEKSI: ONLINE';s.className='badge b-green';b.textContent='Ready';b.className='badge b-green';}
+  else{s.textContent='TEKSI: OFFLINE';s.className='badge b-amber';b.textContent='No Key';b.className='badge b-amber';}
+}
+
+function loadComp(key,el){
+  curComp=key; curFault=null;
+  var c=DB[key]; if(!c) return;
+  document.querySelectorAll('.ti').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById('ch').style.display='block';
+  document.getElementById('fbar').style.display='flex';
+  document.getElementById('ch-t').textContent=c.title;
+  document.getElementById('ch-d').textContent=c.desc;
+  document.getElementById('ch-tg').innerHTML=c.tags.map(function(t){return '<span class="badge b-blue">'+t+'</span>';}).join('');
+  filterMode='all';
+  document.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('fb-all').classList.add('on');
+  document.getElementById('fsearch').value='';
+  document.getElementById('empty').style.display='none';
+  document.getElementById('fl').style.display='block';
+  document.getElementById('ra').innerHTML='<div style="padding:16px;color:var(--t3);font-size:10px;text-align:center;line-height:2">Select a fault →<br>click <span style="color:var(--blue)">🤖 AI Analyze</span></div>';
+  chatCtx=[];
+  renderFaults();
+}
+
+function setF(mode,btn){
+  filterMode=mode;
+  document.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderFaults();
+}
+
+function renderFaults(){
+  if(!curComp) return;
+  var c=DB[curComp];
+  var q=(document.getElementById('fsearch').value||'').toLowerCase();
+  var list=c.faults.filter(function(f){
+    if(filterMode==='c') return f.sev==='c';
+    if(filterMode==='m') return f.sev==='m';
+    if(filterMode==='casc') return f.casc.length>0;
+    return true;
+  });
+  if(q) list=list.filter(function(f){return f.name.toLowerCase().includes(q)||f.cause.toLowerCase().includes(q)||f.code.toLowerCase().includes(q);});
+  if(!list.length){document.getElementById('fl').innerHTML='<div style="padding:18px;text-align:center;color:var(--t3);font-size:10px">No faults match this filter</div>';return;}
+  document.getElementById('fl').innerHTML=list.map(function(f){
+    var sc=f.sev==='c'?'sc':'sm';
+    var sl=f.sev==='c'?'CRITICAL':'MAJOR';
+    var sr=f.sev==='c'?'rc':'rm';
+    var ph=f.params.map(function(p){return '<span class="fp '+(p[2]||'')+'">'+p[0]+': '+p[1]+'</span>';}).join('');
+    var ch='';
+    if(f.casc.length>0){
+      ch='<div class="fcs"><span class="cs0">'+curComp.toUpperCase()+'</span>'+f.casc.map(function(x){return '<span class="csa">→</span><span class="cs1">'+x+'</span>';}).join('')+'</div>';
+    }
+    var ai=apiKey?'':'disabled title="Enter API key"';
+    return '<div class="fc '+sc+(curFault===f.id?' on':'')+'" id="fc_'+f.id+'">'
+      +'<div class="fch" onclick="toggle(\''+f.id+'\')">'
+      +'<span class="fsev '+sr+'">'+sl+'</span>'
+      +'<span class="fn">'+f.name+'</span>'
+      +'<span class="fcode">'+f.code+'</span>'
+      +'</div>'
+      +'<div class="fcb" id="fcb_'+f.id+'" style="display:'+(curFault===f.id?'block':'none')+'">'
+      +'<div class="fps">'+ph+'</div>'
+      +ch
+      +'<div class="fca"><strong>Cause:</strong> '+f.cause+'</div>'
+      +'<div class="fbtns">'
+      +'<button class="fbtn fbs" onclick="runSim(\''+f.id+'\')">📊 Simulate</button>'
+      +'<button class="fbtn fba" '+ai+' onclick="aiAnalyze(\''+f.id+'\')">🤖 AI Analyze</button>'
+      +'</div></div></div>';
+  }).join('');
+}
+
+function toggle(id){
+  curFault=(curFault===id?null:id);
+  renderFaults();
+}
+
+// ── SIMULATION ───────────────────────────────────────────────────────────────
+var simTimer=null, simStep=0, simFault=null;
+var SIM_CFGS=[
+  {id:'sc0',vid:'sdv0',sv:'sv0',unit:'V',min:-56,max:-40,r:59,g:130,b:246,wl:-46,fl:-44,inv:true},
+  {id:'sc1',vid:'sdv1',sv:'sv1',unit:'%',min:0,max:100,r:34,g:197,b:94,wl:20,fl:5,inv:true},
+  {id:'sc2',vid:'sdv2',sv:'sv2',unit:'°C',min:20,max:90,r:245,g:158,b:11,wl:65,fl:75,inv:false},
+  {id:'sc3',vid:'sdv3',sv:'sv3',unit:'dBm',min:-120,max:-50,r:139,g:92,b:246,wl:-90,fl:-105,inv:true}
+];
+var SIM_SOC=[95,91,85,76,65,52,37,22];
+var SIM_TEMP=[38,40,43,47,52,58,65,72];
+var SIM_SIG=[-78,-82,-88,-96,-105,-115,-115,-115];
+
+function runSim(id){
+  var c=DB[curComp]; if(!c) return;
+  var f=c.faults.find(function(x){return x.id===id;}); if(!f) return;
+  simFault=f; simStep=0;
+  document.getElementById('sm-title').textContent=f.name;
+  document.getElementById('sm-desc').textContent='Fault code: '+f.code+' — '+f.cause.substring(0,80)+'...';
+  document.getElementById('ste').innerHTML='';
+  document.getElementById('smbg').style.display='flex';
+  clearInterval(simTimer);
+  simTimer=setInterval(function(){
+    if(simStep>=8){clearInterval(simTimer);addEv('ACTION',f.cause.substring(0,55)+'...','sto');return;}
+    // Compute values for this step
+    var dc=simFault.sim[simStep];
+    var soc=SIM_SOC[simStep];
+    var temp=SIM_TEMP[simStep];
+    var sig=simFault.sim[simStep]===0?-115:SIM_SIG[simStep];
+    // Use fault sim array for DC; derive others from DC
+    if(dc===0||dc<-50){soc=Math.max(0,SIM_SOC[simStep]-10);sig=-115;}
+    updateSimStep([dc,soc,temp,sig]);
+    if(simStep===0) addEv('INFO','T+0s: Normal state — monitoring started','sto');
+    if(simStep===2) addEv('WARN','T+10s: Metrics degrading — alarm threshold approaching','stw');
+    if(simStep===4) addEv('FAULT','T+20s: '+f.name+' — Impact on services starting','stf');
+    if(simStep===6) addEv('ACTION','T+30s: Corrective action required: '+f.code,'sto');
+    simStep++;
+  },750);
+}
+
+function updateSimStep(vals){
+  SIM_CFGS.forEach(function(cfg,i){
+    var v=vals[i];
+    var c=document.getElementById(cfg.id);
+    if(!c) return;
+    var W=c.width,H=c.height;
+    var ctx=c.getContext('2d');
+    var isFault=cfg.inv?v<=cfg.fl:v>=cfg.fl;
+    var isWarn=cfg.inv?v<=cfg.wl:v>=cfg.wl;
+    var r=isFault?239:isWarn?245:cfg.r;
+    var g=isFault?68:isWarn?158:cfg.g;
+    var b=isFault?68:isWarn?11:cfg.b;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0d1117';ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=0.5;
+    for(var j=1;j<4;j++){var y=Math.floor(H*j/4)+0.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // Bar
+    var pct=Math.max(0,Math.min(1,(v-cfg.min)/(cfg.max-cfg.min)));
+    if(cfg.inv) pct=1-pct;
+    var barH=Math.round(pct*(H-4));
+    ctx.fillStyle='rgba('+r+','+g+','+b+',0.25)';
+    ctx.fillRect(0,H-barH,W,barH);
+    ctx.fillStyle='rgb('+r+','+g+','+b+')';
+    ctx.fillRect(0,H-barH,W,3);
+    // Value
+    var el=document.getElementById(cfg.vid);
+    if(el){el.textContent=v.toFixed(1)+cfg.unit;el.style.color='rgb('+r+','+g+','+b+')';}
+    var sv=document.getElementById(cfg.sv);
+    if(sv) sv.textContent=isFault?'🔴':isWarn?'🟡':'🟢';
+  });
+}
+
+function addEv(sev,msg,cls){
+  var ev=document.getElementById('ste');
+  var d=document.createElement('div');d.className='stev';
+  d.innerHTML='<span class="stt">T+'+(simStep*5)+'s</span><span class="'+cls+'">'+sev+'</span><span style="color:var(--t2)">'+msg+'</span>';
+  ev.appendChild(d);ev.scrollTop=ev.scrollHeight;
+}
+
+function closeSim(){clearInterval(simTimer);document.getElementById('smbg').style.display='none';}
+
+// ── AI ANALYSIS ──────────────────────────────────────────────────────────────
+function aiAnalyze(id){
+  if(!apiKey){alert('Enter your Anthropic API key to activate TEKSI deep analysis.');return;}
+  var c=DB[curComp]; var f=c.faults.find(function(x){return x.id===id;}); if(!f) return;
+  var panel=document.getElementById('ra');
+  panel.innerHTML='<div class="typing"><div class="td"><span>●</span><span>●</span><span>●</span></div> TEKSI analyzing '+f.name+'...</div>';
+  document.getElementById('tb').textContent='Analyzing...';document.getElementById('tb').className='badge b-amber';
+  var prompt='Perform a DEEP TECHNICAL ANALYSIS of this telecom equipment fault.\n\n'
+    +'EQUIPMENT: '+c.title+'\nFAULT: '+f.name+' ('+f.code+')\n'
+    +'SEVERITY: '+(f.sev==='c'?'CRITICAL':'MAJOR')+'\nROOT CAUSE: '+f.cause+'\n'
+    +'CASCADE: '+(f.casc.join(' → ')||'Isolated fault')+'\n\n'
+    +'Provide analysis in exactly these 5 sections:\n\n'
+    +'1. PHYSICAL ANALYSIS\nWhat physically happens inside the component (component level: capacitors, IGBT, PLL, laser diode, DSP, etc.). Include the failure mechanism and progression.\n\n'
+    +'2. NETWORK KPI IMPACT\nExact impact on: availability %, RSRP dBm, throughput, latency. Which services fail first and in what order. Time to full outage.\n\n'
+    +'3. CORRECTIVE PROCEDURE\nNumbered steps with specific LMT menu paths, multimeter measurement values, component replacement instructions. Include safety warnings.\n\n'
+    +'4. PREVENTION & MAINTENANCE\nHow to prevent recurrence. Inspection frequency. Parameters to monitor. Alarm thresholds to configure.\n\n'
+    +'5. RELATED FAULTS\nName 2-3 faults that commonly co-occur or that this fault escalates to. Explain the relationship.\n\n'
+    +'Context: MTN Congo Zone Sud. Equipment: ZTE/Huawei/Deep Sea. Field engineer language. Be precise and actionable. Max 350 words total.';
+  chatCtx=[{role:'user',content:prompt}];
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:chatCtx})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.error) throw new Error(d.error.message);
+    var text=d.content.map(function(b){return b.text||'';}).join('');
+    chatCtx.push({role:'assistant',content:text});
+    renderAI(f,text);
+    document.getElementById('tb').textContent='Done';document.getElementById('tb').className='badge b-green';
+  }).catch(function(e){
+    panel.innerHTML='<div style="padding:12px;color:var(--red);font-size:10px">⚠ Error: '+e.message+'</div>';
+    document.getElementById('tb').textContent='Error';document.getElementById('tb').className='badge b-red';
+  });
+}
+
+function renderAI(f,text){
+  var panel=document.getElementById('ra');
+  var sections=[
+    {k:'PHYSICAL ANALYSIS',ic:'🔬',c:'var(--blue)'},
+    {k:'NETWORK KPI IMPACT',ic:'📉',c:'var(--red)'},
+    {k:'CORRECTIVE PROCEDURE',ic:'🔧',c:'var(--green)'},
+    {k:'PREVENTION',ic:'🛡',c:'var(--amber)'},
+    {k:'RELATED FAULTS',ic:'🔗',c:'var(--purple)'}
+  ];
+  var html='<div class="ab" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.05)">'
+    +'<div class="at" style="color:var(--red)">⚠ '+f.name+' — '+f.code+'</div>'
+    +'<div class="ac">'+f.cause+'</div></div>';
+  sections.forEach(function(s){
+    var re=new RegExp(s.k+'[:\\s\\-*#]*(.*?)(?=\\n\\n?[1-9]\\.|\\n\\n?[A-Z]{2,}\\s|$)','is');
+    var m=text.match(re);
+    if(m){
+      var content=m[1].trim()
+        .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\n-\s/g,'<br>• ')
+        .replace(/\n(\d+)\./g,'<br>$1.')
+        .replace(/\n/g,'<br>');
+      html+='<div class="ab"><div class="at" style="color:'+s.c+'">'+s.ic+' '+s.k+'</div><div class="ac">'+content+'</div></div>';
+    }
+  });
+  if(html.length<400){
+    html+='<div class="ab"><div class="at">📋 Analysis</div><div class="ac">'+text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')+'</div></div>';
+  }
+  panel.innerHTML=html;
+}
+
+function ask(){
+  var inp=document.getElementById('rin');var txt=inp.value.trim();if(!txt) return;
+  if(!apiKey){alert('Enter API key to use TEKSI.');return;}
+  inp.value='';document.getElementById('rsend').disabled=true;
+  var compCtx=curComp?DB[curComp].title:'General telecom';
+  var sys='You are TEKSI, expert telecom engineer at MTN Congo Zone Sud. Deep knowledge of ZTE ZXSDR B8200, ZTE ZXMW NR8250, ZTE ZXDU68, Huawei ETP48200, R4850G2, Deep Sea generators, VRLA batteries, RRU R8882, CPRI, GPS/PTP synchronization. Current context: '+compCtx+'. English, field engineer style, max 180 words.';
+  chatCtx.push({role:'user',content:txt});
+  var panel=document.getElementById('ra');
+  panel.innerHTML+='<div class="ab" style="border-color:rgba(59,130,246,.3)"><div class="at">💬 '+txt+'</div><div class="ac" id="rp" style="color:var(--t3)">TEKSI thinking...</div></div>';
+  panel.scrollTop=panel.scrollHeight;
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:chatCtx.slice(-8)})
+  }).then(function(r){return r.json();}).then(function(d){
+    var t=d.content?d.content.map(function(b){return b.text||'';}).join(''):'Error';
+    chatCtx.push({role:'assistant',content:t});
+    var rp=document.getElementById('rp');
+    if(rp){rp.innerHTML=t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');rp.style.color='var(--t2)';rp.id='';}
+    panel.scrollTop=panel.scrollHeight;
+  }).catch(function(e){var rp=document.getElementById('rp');if(rp){rp.textContent='⚠ Error: '+e.message;rp.id='';}})
+  .finally(function(){document.getElementById('rsend').disabled=false;});
+}
+
+window.addEventListener('load',function(){updateStatus();});
+
+// ═══════════════════════════════════════════════════════════════════════
+// REAL DATA FROM MTN CONGO EFLOWTT + ASSET MANAGEMENT
+// 1436 tickets analysed — each component fault enriched with real MTTR
+// and real ticket descriptions from Zone Sud technicians
+// ═══════════════════════════════════════════════════════════════════════
+const EF_DATA = {"genset": [{"rca": "DG Fault", "name": "DG Fault", "code": "G-EF01", "sev": "c", "count": 30, "avg_mttr": 112, "max_mttr": 614, "tickets": [{"site": "TEXACO TSIEME", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": " The sectors had been impacted because of the automatic start failure of the DG caused by the priming pump (primer pump) which no longer had pressure to draw fue", "sol": "Automatic startup of the DG after purging the DG  \nRecommendation:\nWe should reconnect the external tank and then install an electric pump", "mttr": 34.0}, {"site": "NKEWA", "region": "BRAZZAVILLE_POOL", "oem": "Others", "desc": "DG radiator in fault and lack of water", "sol": "DG radiator replaced and water added", "mttr": 59.0}, {"site": "NKEWA", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "DG radiator in fault and lack of water", "sol": "water added and DG started", "mttr": 28.0}]}, {"rca": "SNE low voltage", "name": "SNE Low Voltage / Phase Control", "code": "G-EF02", "sev": "c", "count": 72, "avg_mttr": 33, "max_mttr": 480, "tickets": [{"site": "PALMERAIS MBEMBA", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "The site was down due to a malfunction of the phase control relay, as well as the SNE contactor which has become faulty", "sol": "DG has been restarted after SNE switched OFF by SG", "mttr": 7.0}, {"site": "ECOLE PRIMAIRE MAKAYABOU", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "we suspect EEC low voltage ", "sol": "EEC Breaker Switch off, and DG started ", "mttr": 38.0}, {"site": "MADIBOU1", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "over voltage of an SNE line phase", "sol": " désactivation of the SNE main circuit breaker and DG start automatically\nRecommendation: involve the SNE agent to stabilize tensions", "mttr": 19.0}]}, {"rca": "Circuit Breaker Off", "name": "Circuit Breaker Off / Supply Cut", "code": "G-EF03", "sev": "c", "count": 15, "avg_mttr": 76, "max_mttr": 192, "tickets": [{"site": "MADINGOKAYES", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "DC breaker tripped off ", "sol": "DC breaker switched on by SG", "mttr": 8.0}, {"site": "MADINGOKAYES", "region": "POINT_NOIRE", "oem": "ZTE", "desc": " DC breaker tripped off ", "sol": "DC breaker switched on by SG \nRecommendation: \n1-site under DG \n2-we plan to replace  this breaker", "mttr": 12.0}, {"site": "KISITO", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "Circuit breaker switched off", "sol": "Circuit breaker switched on", "mttr": 58.0}]}, {"rca": "Auto Recovery", "name": "Auto Recovery — Genset", "code": "G-EF04", "sev": "n", "count": 383, "avg_mttr": 651, "max_mttr": 34463, "tickets": []}], "battery": [{"rca": "Low Battery Autonomy", "name": "Low Battery Autonomy / Deep Discharge", "code": "B-EF01", "sev": "m", "count": 13, "avg_mttr": 21, "max_mttr": 131, "tickets": [{"site": "NKEWA", "region": "BRAZZAVILLE_POOL", "oem": "Others", "desc": "Change over SNE-DG, no autonomy batteries backup", "sol": "Auto restored", "mttr": 13.0}, {"site": "LOUVAKOU", "region": "SOUTH", "oem": "ZTE", "desc": "suspecting Backup batteries fault", "sol": "DG starting in manual mode\nRecommendation: Team will continue with investigations tomorrow morning ", "mttr": 131.0}, {"site": "LOUVAKOU", "region": "SOUTH", "oem": "Others", "desc": "Batteries back up discharged during snag correction", "sol": "DG started", "mttr": 13.0}]}, {"rca": "SNE low voltage", "name": "SNE Voltage — Battery Impact", "code": "B-EF02", "sev": "m", "count": 72, "avg_mttr": 33, "max_mttr": 480, "tickets": [{"site": "PALMERAIS MBEMBA", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "The site was down due to a malfunction of the phase control relay, as well as the SNE contactor which has become faulty", "sol": "DG has been restarted after SNE switched OFF by SG", "mttr": 7.0}, {"site": "ECOLE PRIMAIRE MAKAYABOU", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "we suspect EEC low voltage ", "sol": "EEC Breaker Switch off, and DG started ", "mttr": 38.0}, {"site": "MADIBOU1", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "over voltage of an SNE line phase", "sol": " désactivation of the SNE main circuit breaker and DG start automatically\nRecommendation: involve the SNE agent to stabilize tensions", "mttr": 19.0}]}], "bbu": [{"rca": "Board Freeze", "name": "Board Freeze / GNSS Fault", "code": "BB-EF01", "sev": "c", "count": 91, "avg_mttr": 31, "max_mttr": 927, "tickets": [{"site": "MANDELA RELOCATION", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "Satellite searching fault of the GNSS receiver ,The board is being initialized ", "sol": "Auto resolved ", "mttr": 2.0}, {"site": "MADIBOU1", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "Satellite searching fault of the GNSS receiver , The board is being initialized", "sol": "AUTO RESOLVED ", "mttr": 7.0}, {"site": "MTN HQ RELOCATION", "region": "Brazzaville", "oem": "ZTE", "desc": "The board is being initialized ,Satellite searching fault of the GNSS receiver,Clock has a critical alarm", "sol": "Auto resolved ", "mttr": 4.0}]}, {"rca": "BTS_Hanging--Hanging BTS with unknown root cause", "name": "BTS Hanging — Unknown Root Cause", "code": "BB-EF02", "sev": "c", "count": 71, "avg_mttr": 27, "max_mttr": 478, "tickets": [{"site": "MTN HQ RELOCATION", "region": "Brazzaville", "oem": "ZTE", "desc": "VBPe1p & VBPd2p board rebooted due to interference (sites are configured 1588, clock time is different with GPS, Once gps lost, it will switch to clock, it will be reboot automatic", "sol": "Auto resolved", "mttr": 11.0}, {"site": "NEW OMS", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "Carrier uplink data is abnormal on UBPG3", "sol": "Auto resolved", "mttr": 5.0}, {"site": "MANDELA RELOCATION", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "VBPd2p & VBPe1p board rebooted due to  interference (Site is configured 1588, clock time is different with GPS, Once gps lost, it will switch to clock, it will be reboot automatica", "sol": "Auto resolved", "mttr": 5.0}]}, {"rca": "BTS_Hardware Fault", "name": "BTS Hardware Fault", "code": "BB-EF03", "sev": "c", "count": 33, "avg_mttr": 141, "max_mttr": 3953, "tickets": [{"site": "MTN HQ RELOCATION", "region": "Brazzaville", "oem": "ZTE", "desc": "Interference (Site is configured 1588, clock time is different with GPS, Once GPS lost, it will switch to clock, it will be reboot automatically because the different clock)", "sol": "BBU reset", "mttr": 100.0}, {"site": "KINTELE STADIUM IBS1/2(1113)", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "BBU powered off by project team", "sol": "No action", "mttr": 10.0}, {"site": "NGAMAKOSSO", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": " sector down due to optical module issue", "sol": " Up after swap the optical module", "mttr": 323.0}]}, {"rca": "High Temperature", "name": "High Temperature — Board Derate", "code": "BB-EF04", "sev": "m", "count": 26, "avg_mttr": 65, "max_mttr": 331, "tickets": [{"site": "MAKAYA", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Alarm received on IDU due to the presence of heat in the cabinet.\n", "sol": "Alarm cleared after FE opened the cabinet.\n", "mttr": 87.0}, {"site": "TIE-TIE", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Alarm received on IDU due to the presence of heat in the cabinet.\n", "sol": "Alarm cleared after FE opened the cabinet.\n", "mttr": 83.0}, {"site": "TIE-TIE", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Alarm due to heat in cabinet.", "sol": "Alarm clean after opening equipment door by the SG", "mttr": 10.0}]}, {"rca": "Auto Recovery", "name": "Auto Recovery — BBU", "code": "BB-EF05", "sev": "n", "count": 383, "avg_mttr": 651, "max_mttr": 34463, "tickets": []}], "idu": [{"rca": "MW Atmospheric Fading", "name": "MW Atmospheric Fading / RSL Low", "code": "I-EF01", "sev": "m", "count": 191, "avg_mttr": 12, "max_mttr": 353, "tickets": [{"site": "BOKANIA", "region": "NORTH_CENTER", "oem": "Huawei", "desc": "MW Link BOKANIA facing ITOUMBI flapping with RADIO_RSL_LOW Alarm, PLA_MEMBER_DOWN_EXT Alarm, due to bad RX level of RSL:  -57.4dBm during bad weather in BOKANIA area", "sol": "Link auto restored, current RSL: -37.8dBm.", "mttr": 3.0}, {"site": "ETOUMBI", "region": "NORTH_CENTER", "oem": "ZTE", "desc": "MW Link BOKANIA facing ITOUMBI flapping with RADIO_RSL_LOW Alarm, PLA_MEMBER_DOWN_EXT Alarm, due to bad RX level of RSL:  -57.4dBm during bad weather in BOKANIA area", "sol": "Link auto restored, current RSL: -37.8dBm.", "mttr": 3.0}, {"site": "BOKANIA", "region": "NORTH_CENTER", "oem": "Huawei", "desc": "MW Link BOKANIA facing ITOUMBI flapping with RADIO_RSL_LOW Alarm, PLA_MEMBER_DOWN_EXT Alarm, due to bad RX level of RSL:  -57.4dBm during bad weather in BOKANIA area", "sol": "Link auto restored, current RSL: -37.8dBm", "mttr": 2.0}]}, {"rca": "Bad VSAT TX quality", "name": "Bad VSAT TX Quality", "code": "I-EF02", "sev": "m", "count": 16, "avg_mttr": 11, "max_mttr": 54, "tickets": [{"site": "BETOU", "region": "NORTH", "oem": "ZTE", "desc": "VSAT TRANSMITION ISSUE ", "sol": "Auto Resolved ", "mttr": 1.0}, {"site": "BETOU", "region": "NORTH", "oem": "ZTE", "desc": "VSAT TRANSMISSION ISSUE ", "sol": "AUTO RESTORED", "mttr": 4.0}, {"site": "BETOU", "region": "NORTH", "oem": "ZTE", "desc": "VSAT TRANSMITION ISSUE ", "sol": "AUTO RESOL.VED ", "mttr": 5.0}]}, {"rca": "Shared Site(Airtel)", "name": "Shared Site (Airtel) Transmission Issue", "code": "I-EF03", "sev": "m", "count": 48, "avg_mttr": 133, "max_mttr": 1153, "tickets": [{"site": "KINDAMBA", "region": "BRAZZAVILLE_POOL", "oem": "Airtel", "desc": "Airtel transmition issue ", "sol": "Auto resolved ", "mttr": 7.0}, {"site": "KINDAMBA", "region": "BRAZZAVILLE_POOL", "oem": "Airtel", "desc": "Airtel transmition issue ", "sol": "Auto  resolved ", "mttr": 1.0}, {"site": "KINDAMBA", "region": "BRAZZAVILLE_POOL", "oem": "Airtel", "desc": "AIRTEL TRANSMITION ISSUE ", "sol": "AUTO RESOLVED", "mttr": 29.0}]}, {"rca": "Shared Site(Helios)", "name": "Shared Site (Helios) Issue", "code": "I-EF04", "sev": "m", "count": 46, "avg_mttr": 60, "max_mttr": 901, "tickets": [{"site": "GLACIERE", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "TRB1334815: MASSEDO (GLACIERE) site down after investigation caused by a faulty module in the rectifier", "sol": "START DG", "mttr": 1.0}, {"site": "CASIS HELIOS", "region": "BRAZZAVILLE_POOL", "oem": "Helios", "desc": "TRB1335118: Site down due to faulty generator undervoltage and malfunctioning battery backups", "sol": "Site UP after alarm reset and DG restart", "mttr": 50.0}, {"site": "CASIS HELIOS", "region": "BRAZZAVILLE_POOL", "oem": "Helios", "desc": "Presence of under voltage alarm/ TRB1335118 ", "sol": "Alarm cleared and DG started", "mttr": 50.0}]}], "sfp": [{"rca": "Fibre Fault", "name": "Fibre Fault / Optical Cut", "code": "SF-EF01", "sev": "c", "count": 20, "avg_mttr": 245, "max_mttr": 676, "tickets": [{"site": "BRASSERIE", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Fiber has been cut by vandals, copper thieves.", "sol": "Fiber Link BRASSERIE facing POUDRIERE is currently UP after fiber spliced.", "mttr": 134.0}, {"site": "MANDELA RELOCATION", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "Cable cut following construction work", "sol": " Adding an 80m cable and connecting two boxes", "mttr": 129.0}, {"site": "KOUFOLI HELIOS 2", "region": "PNR", "oem": "ZTE", "desc": " poles fall down during the raining", "sol": "cable cut and spliced", "mttr": 676.0}]}, {"rca": "Cables/Connector Fault", "name": "Cables & Connector Fault", "code": "SF-EF02", "sev": "m", "count": 19, "avg_mttr": 326, "max_mttr": 2089, "tickets": [{"site": "MANGA KALE", "region": "SOUTH", "oem": "ZTE", "desc": "SITE FLAPPED DUE TO : Link Dolisie1 to Mangakale lost management :\noptical fiber fault ", "sol": "optical fiber replaced \nRecommendation: under observation", "mttr": 6.0}, {"site": "MANGA KALE", "region": "SOUTH", "oem": "ZTE", "desc": "SITE UNSTABLE DUE TO : Link Dolisie1 to Mangakale lost management :\noptical fiber fault ", "sol": "optical fiber replaced \nRecommendation: under observation", "mttr": 2.0}, {"site": "BUROTOP", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "sector down due to vswr alarm antenna water infiltration in the jumper connector", "sol": " sector after swap the jumper between RRU-GSM antenna", "mttr": 720.0}]}], "rru": [{"rca": "BTS_Hardware Fault", "name": "RRU Hardware Fault", "code": "R-EF01", "sev": "c", "count": 33, "avg_mttr": 141, "max_mttr": 3953, "tickets": [{"site": "MTN HQ RELOCATION", "region": "Brazzaville", "oem": "ZTE", "desc": "Interference (Site is configured 1588, clock time is different with GPS, Once GPS lost, it will switch to clock, it will be reboot automatically because the different clock)", "sol": "BBU reset", "mttr": 100.0}, {"site": "KINTELE STADIUM IBS1/2(1113)", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "BBU powered off by project team", "sol": "No action", "mttr": 10.0}, {"site": "NGAMAKOSSO", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": " sector down due to optical module issue", "sol": " Up after swap the optical module", "mttr": 323.0}]}, {"rca": "High Temperature", "name": "RRU High Temperature / PA Derate", "code": "R-EF02", "sev": "m", "count": 26, "avg_mttr": 65, "max_mttr": 331, "tickets": [{"site": "MAKAYA", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Alarm received on IDU due to the presence of heat in the cabinet.\n", "sol": "Alarm cleared after FE opened the cabinet.\n", "mttr": 87.0}, {"site": "TIE-TIE", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Alarm received on IDU due to the presence of heat in the cabinet.\n", "sol": "Alarm cleared after FE opened the cabinet.\n", "mttr": 83.0}, {"site": "TIE-TIE", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "Alarm due to heat in cabinet.", "sol": "Alarm clean after opening equipment door by the SG", "mttr": 10.0}]}, {"rca": "Cables/Connector Fault", "name": "VSWR / Connector Fault", "code": "R-EF03", "sev": "m", "count": 19, "avg_mttr": 326, "max_mttr": 2089, "tickets": [{"site": "MANGA KALE", "region": "SOUTH", "oem": "ZTE", "desc": "SITE FLAPPED DUE TO : Link Dolisie1 to Mangakale lost management :\noptical fiber fault ", "sol": "optical fiber replaced \nRecommendation: under observation", "mttr": 6.0}, {"site": "MANGA KALE", "region": "SOUTH", "oem": "ZTE", "desc": "SITE UNSTABLE DUE TO : Link Dolisie1 to Mangakale lost management :\noptical fiber fault ", "sol": "optical fiber replaced \nRecommendation: under observation", "mttr": 2.0}, {"site": "BUROTOP", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "sector down due to vswr alarm antenna water infiltration in the jumper connector", "sol": " sector after swap the jumper between RRU-GSM antenna", "mttr": 720.0}]}], "rect_zte": [{"rca": "Rectifier Fault", "name": "Rectifier Fault — Module Failure", "code": "RZ-EF01", "sev": "c", "count": 0, "avg_mttr": 0, "max_mttr": 0, "tickets": []}, {"rca": "SNE low voltage", "name": "SNE Low Voltage — DC Undervolt", "code": "RZ-EF02", "sev": "c", "count": 72, "avg_mttr": 33, "max_mttr": 480, "tickets": [{"site": "PALMERAIS MBEMBA", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "The site was down due to a malfunction of the phase control relay, as well as the SNE contactor which has become faulty", "sol": "DG has been restarted after SNE switched OFF by SG", "mttr": 7.0}, {"site": "ECOLE PRIMAIRE MAKAYABOU", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "we suspect EEC low voltage ", "sol": "EEC Breaker Switch off, and DG started ", "mttr": 38.0}, {"site": "MADIBOU1", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "over voltage of an SNE line phase", "sol": " désactivation of the SNE main circuit breaker and DG start automatically\nRecommendation: involve the SNE agent to stabilize tensions", "mttr": 19.0}]}, {"rca": "Circuit Breaker Off", "name": "Circuit Breaker Off — AC Input Lost", "code": "RZ-EF03", "sev": "c", "count": 15, "avg_mttr": 76, "max_mttr": 192, "tickets": [{"site": "MADINGOKAYES", "region": "POINT_NOIRE", "oem": "ZTE", "desc": "DC breaker tripped off ", "sol": "DC breaker switched on by SG", "mttr": 8.0}, {"site": "MADINGOKAYES", "region": "POINT_NOIRE", "oem": "ZTE", "desc": " DC breaker tripped off ", "sol": "DC breaker switched on by SG \nRecommendation: \n1-site under DG \n2-we plan to replace  this breaker", "mttr": 12.0}, {"site": "KISITO", "region": "BRAZZAVILLE_POOL", "oem": "ZTE", "desc": "Circuit breaker switched off", "sol": "Circuit breaker switched on", "mttr": 58.0}]}], "rect_hw": [{"rca": "Rectifier Fault", "name": "Huawei Rectifier Fault", "code": "RH-EF01", "sev": "c", "count": 0, "avg_mttr": 0, "max_mttr": 0, "tickets": []}, {"rca": "Low Battery Autonomy", "name": "Low Battery — AC Failure", "code": "RH-EF02", "sev": "m", "count": 13, "avg_mttr": 21, "max_mttr": 131, "tickets": [{"site": "NKEWA", "region": "BRAZZAVILLE_POOL", "oem": "Others", "desc": "Change over SNE-DG, no autonomy batteries backup", "sol": "Auto restored", "mttr": 13.0}, {"site": "LOUVAKOU", "region": "SOUTH", "oem": "ZTE", "desc": "suspecting Backup batteries fault", "sol": "DG starting in manual mode\nRecommendation: Team will continue with investigations tomorrow morning ", "mttr": 131.0}, {"site": "LOUVAKOU", "region": "SOUTH", "oem": "Others", "desc": "Batteries back up discharged during snag correction", "sol": "DG started", "mttr": 13.0}]}]};
+
+// ── Inject real EflowTT data into the AI analysis panel ────────────────
+function renderEflowEnrichment(compKey) {
+  var efFaults = EF_DATA[compKey];
+  if(!efFaults || efFaults.length === 0) return '';
+  var total = efFaults.reduce(function(a,f){return a+f.count;},0);
+  var html = '<div class="ab" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)">'
+    + '<div class="at" style="color:var(--amber)">📊 Données Réelles MTN Congo — ' + total + ' tickets EflowTT Zone Sud</div>'
+    + '<div class="ac" style="font-size:9px">Pannes réellement survenues sur le réseau. MTTR validés par techniciens terrain.</div></div>';
+
+  efFaults.forEach(function(f) {
+    if(f.count === 0) return;
+    var sevColor = f.sev==='c'?'var(--red)':f.sev==='m'?'var(--amber)':'var(--teal)';
+    html += '<div class="ab" style="border-color:'+(f.sev==='c'?'rgba(239,68,68,.2)':'rgba(245,158,11,.15)') + '">'
+      + '<div class="at" style="color:'+sevColor+';">'
+      + f.name + ' <span class="fcode">'+f.code+'</span>'
+      + '<span style="margin-left:auto;font-size:9px;color:var(--t3)">'+f.count+' tickets · MTTR moy: '+f.avg_mttr+'min</span>'
+      + '</div>';
+
+    // Real tickets
+    if(f.tickets && f.tickets.length > 0) {
+      html += '<div class="ac">';
+      f.tickets.forEach(function(t, i) {
+        html += '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg);border-radius:5px;border:0.5px solid var(--b)">'
+          + '<div style="font-size:8px;color:var(--blue);margin-bottom:3px">📍 ' + t.site + ' (' + t.region + ') · OEM: ' + t.oem + ' · MTTR: ' + t.mttr + 'min</div>'
+          + '<div style="font-size:9px;color:var(--t2);margin-bottom:2px"><strong>Description:</strong> ' + t.desc + '</div>'
+          + '<div style="font-size:9px;color:var(--green)"><strong>Solution:</strong> ' + t.sol + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  return html;
+}
+
+// ── Override the loadComp function to also show EflowTT panel ──────────
+var _origLoadComp = loadComp;
+loadComp = function(key, el) {
+  _origLoadComp(key, el);
+  // Add EflowTT enrichment below the initial AI panel
+  var panel = document.getElementById('ra');
+  var efHtml = renderEflowEnrichment(key);
+  if(efHtml) {
+    panel.innerHTML = '<div style="padding:10px 10px 0;color:var(--t3);font-size:10px;text-align:center">Sélectionne une panne → <span style="color:var(--blue)">🤖 AI Analyze</span></div>'
+      + efHtml;
+  }
+};
+
+// ── When AI analyzes a fault, prepend EflowTT context in the prompt ────
+var _origAiAnalyze = aiAnalyze;
+aiAnalyze = function(id) {
+  // Enrich the prompt with real EflowTT context before sending to Claude
+  var efFaults = EF_DATA[curComp] || [];
+  var comp = DB[curComp];
+  var fault = comp ? comp.faults.find(function(x){return x.id===id;}) : null;
+  if(!fault) { _origAiAnalyze(id); return; }
+
+  // Find matching EflowTT data for this fault
+  var matchingEF = efFaults.filter(function(ef) {
+    var faultNameLower = fault.name.toLowerCase();
+    var efNameLower = ef.name.toLowerCase();
+    return faultNameLower.includes(ef.rca.toLowerCase().split('_')[0]) ||
+           efNameLower.split(' ').some(function(w){ return w.length>4 && faultNameLower.includes(w.toLowerCase()); }) ||
+           ef.code.split('-')[0] === fault.code.split('-')[0];
+  });
+
+  if(matchingEF.length === 0) { _origAiAnalyze(id); return; }
+
+  // Build enriched context
+  var efContext = matchingEF.map(function(ef) {
+    var ticketLines = (ef.tickets||[]).map(function(t,i){
+      return '  Ticket '+(i+1)+': ['+t.site+'/'+t.region+'/OEM:'+t.oem+'] Description: '+t.desc+' → Solution: '+t.sol+' (MTTR: '+t.mttr+'min)';
+    }).join('\n');
+    return ef.name+' ('+ef.count+' tickets EflowTT, MTTR moy: '+ef.avg_mttr+'min):\n'+ticketLines;
+  }).join('\n\n');
+
+  // Inject into prompt via temporary override
+  window._efContext = efContext;
+  window._efCount = matchingEF.reduce(function(a,f){return a+f.count;},0);
+  _origAiAnalyze(id);
+};
+
+// ── Patch the prompt builder to include EflowTT context ───────────────
+var _origFetch = window.fetch;
+window.fetch = function(url, options) {
+  if(url && url.includes('anthropic.com') && options && options.body && window._efContext) {
+    try {
+      var body = JSON.parse(options.body);
+      if(body.messages && body.messages[0] && window._efContext) {
+        var originalPrompt = body.messages[0].content;
+        body.messages[0].content = originalPrompt
+          + '\n\n--- DONNÉES RÉELLES EFLOWTT MTN CONGO (' + window._efCount + ' tickets) ---\n'
+          + window._efContext
+          + '\n\nIMPORTANT: Inclure les données EflowTT réelles dans ton analyse. Citer les exemples de tickets. Comparer avec la procédure théorique.';
+        options.body = JSON.stringify(body);
+        window._efContext = null;
+        window._efCount = 0;
+      }
+    } catch(e) {}
+  }
+  return _origFetch.apply(this, arguments);
+};
+
+</script><script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("sw.js")
+      .then(function(r){console.log("TEKSI SW registered",r);})
+      .catch(function(e){console.log("SW error:",e);});
+  });
+}
+</script>
+</body></html>
